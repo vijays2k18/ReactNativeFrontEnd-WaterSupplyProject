@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 const AdminLogin = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [token, setToken] = useState(''); // State to store the token
   const navigation = useNavigation();
 
   const postAPIData = async (username, password, navigation) => {
@@ -13,7 +14,7 @@ const AdminLogin = () => {
       Alert.alert('Error', 'Please enter both username and password');
       return;
     }
-  
+
     try {
       const response = await fetch('http://nodejs-api.pixelsscreen.com/admin/login', {
         method: 'POST', // Specify HTTP method
@@ -25,18 +26,23 @@ const AdminLogin = () => {
           password: password,
         }),
       });
-  
+
       const result = await response.json();
-  
+
       if (response.ok) {
-        // If response is successful (status code 200)
+        // Store the token in state
+        setToken(result.token);
+
+        // Navigate to AdminHome with the token
         Alert.alert('Success', 'Login successful', [
           {
             text: 'OK',
             onPress: () => {
               navigation.reset({
-                index: 0, // Set the stack index to 0
-                routes: [{ name: 'AdminHome' }], // Replace stack with AdminHome
+                index: 0,
+                routes: [
+                  { name: 'AdminHome', params: { token: result.token, username: username } }
+                ],
               });
             },
           },
@@ -51,7 +57,7 @@ const AdminLogin = () => {
       Alert.alert('Error', 'Something went wrong. Please try again later.');
     }
   };
-  
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.logoContainer}>
@@ -65,7 +71,7 @@ const AdminLogin = () => {
           value={username}
           onChangeText={setUsername}
         />
-        
+
         <TextInput
           style={styles.input}
           placeholder="Enter Your Password"
@@ -75,7 +81,11 @@ const AdminLogin = () => {
         />
 
         <View style={styles.buttonContainer}>
-        <Button title="Login" onPress={() => postAPIData(username, password, navigation)} />        </View>
+          <Button
+            title="Login"
+            onPress={() => postAPIData(username, password, navigation)}
+          />
+        </View>
       </View>
     </SafeAreaView>
   );
