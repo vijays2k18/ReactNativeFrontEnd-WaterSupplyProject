@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Import MaterialIcons or another icon set
 import Customer from './customer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Dashboard = () => (
   <View style={styles.screenContainer}>
@@ -20,13 +21,6 @@ const AdminHome = ({ route }) => {
   const navigation = useNavigation(); // Use navigation for logout button
   const data = route.params;
 
-  useEffect(() => {
-    if (route.params?.token) {
-      setToken(route.params.token); // Safely set the token
-    }
-  }, [route.params]);
-
-  console.log(token);
   return (
     <SafeAreaView style={styles.container}>
       {/* Header Section */}
@@ -35,8 +29,8 @@ const AdminHome = ({ route }) => {
         <Button
           title="Logout"
           color="#E74C3C"
-          onPress={() => {
-            setToken('');
+          onPress={async () => {
+            await AsyncStorage.removeItem("token");
             navigation.reset({ index: 0, routes: [{ name: 'AdminLogin' }] });
           }}
         />

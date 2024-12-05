@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import {
 StyleSheet,
@@ -18,20 +19,23 @@ const [address, setAddress] = useState('');
 const [isFormVisible, setIsFormVisible] = useState(false);
 const [customers, setCustomers] = useState([]);
 const [editingCustomerId, setEditingCustomerId] = useState(null);
-console.log(token,"Customer page get token ..........")
 
+const getAPI = async () =>{
+  const  token = await AsyncStorage.getItem("token")
+  const response = await fetch('http://nodejs-api.pixelsscreen.com/api/users',{
+    method: 'GET',
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+  })
+  const result = await response.json();
+  setCustomers(result);
+}
 
-useEffect(() => {
-  // Check the route params
- if (route.params?.token) {
-   setToken(route.params.token);
- }
-}, [route.params]);
-
-
-console.log(token,"form cutomer form");
-
-
+useEffect(()=>{
+  getAPI(); 
+},[])
 
 const handleAddCustomer = async () => {
   if (!name || !phoneNumber || !address) {
@@ -40,6 +44,8 @@ const handleAddCustomer = async () => {
   }
 
   try {
+    const  token = await AsyncStorage.getItem("token")
+    console.log(token)
     const response = await fetch('http://nodejs-api.pixelsscreen.com/api/users', {
       method: 'POST',
       headers: {
@@ -181,7 +187,7 @@ return (
         <View style={styles.customerCard}>
           <View style={styles.customerInfo}>
             <Text style={styles.customerName}>{item.name}</Text>
-            <Text style={styles.customerDetails}>Phone: {item.phoneNumber}</Text>
+            <Text style={styles.customerDetails}>Phone: {item.phone_number}</Text>
             <Text style={styles.customerDetails}>Address: {item.address}</Text>
           </View>
           <View style={styles.operations}>

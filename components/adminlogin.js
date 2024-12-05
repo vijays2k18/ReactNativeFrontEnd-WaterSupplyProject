@@ -1,11 +1,11 @@
 import { StyleSheet, View, Image, SafeAreaView, Button, TextInput, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AdminLogin = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [token, setToken] = useState(''); // State to store the token
   const navigation = useNavigation();
 
   const postAPIData = async (username, password, navigation) => {
@@ -31,7 +31,7 @@ const AdminLogin = () => {
 
       if (response.ok) {
         // Store the token in state
-        setToken(result.token);
+       await AsyncStorage.setItem("token",result.token);
 
         // Navigate to AdminHome with the token
         Alert.alert('Success', 'Login successful', [
@@ -41,7 +41,7 @@ const AdminLogin = () => {
               navigation.reset({
                 index: 0,
                 routes: [
-                  { name: 'AdminHome', params: { token: result.token, username: username } }
+                  { name: 'AdminHome', params: { username: username } }
                 ],
               });
             },
