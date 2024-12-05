@@ -1,27 +1,25 @@
-import { StyleSheet, Text, View, SafeAreaView, Button } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, Button,TextInput} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialIcons'; // Import MaterialIcons or another icon set
+import Customer from './customer';
 
-// Define your Dashboard and Customer components
 const Dashboard = () => (
   <View style={styles.screenContainer}>
     <Text style={styles.screenText}>Dashboard</Text>
   </View>
 );
 
-const Customer = () => (
-  <View style={styles.screenContainer}>
-    <Text style={styles.screenText}>Customer</Text>
-  </View>
-);
+
+
+const Tab = createBottomTabNavigator();
 
 const AdminHome = ({ route }) => {
   const [token, setToken] = useState('');
   const navigation = useNavigation(); // Use navigation for logout button
   const data = route.params;
 
-  // UseEffect to set the token
   useEffect(() => {
     if (route.params?.token) {
       setToken(route.params.token); // Safely set the token
@@ -29,7 +27,6 @@ const AdminHome = ({ route }) => {
   }, [route.params]);
 
   console.log(token);
-
   return (
     <SafeAreaView style={styles.container}>
       {/* Header Section */}
@@ -37,70 +34,115 @@ const AdminHome = ({ route }) => {
         <Text style={styles.welcomeText}>Welcome {data?.username || 'Admin'}</Text>
         <Button
           title="Logout"
-          color="#E74C3C" // Red color for logout button
+          color="#E74C3C"
           onPress={() => {
-            setToken(''); // Clear the token
-            navigation.reset({ index: 0, routes: [{ name: 'AdminLogin' }] }); // Navigate to AdminLogin
+            setToken('');
+            navigation.reset({ index: 0, routes: [{ name: 'AdminLogin' }] });
           }}
         />
       </View>
 
       {/* Bottom Navigation */}
       <Tab.Navigator
-        screenOptions={{
-          headerShown: false, // Hide the header for tab screens
-          tabBarActiveTintColor: '#1E90FF', // Active tab color
-          tabBarInactiveTintColor: 'gray', // Inactive tab color
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarActiveTintColor: 'black',
+          tabBarInactiveTintColor: 'gray',
           tabBarStyle: {
-            backgroundColor: '#2C3E50', // Dark background color for bottom tab
-            borderTopWidth: 0, // Remove the top border
-            paddingBottom: 10, // Add some padding at the bottom for a more spaced-out look
-            height: 60, // Adjust height for a more professional look
+            backgroundColor: 'white',
+            borderTopWidth: 0,
+            paddingBottom: 10,
+            height: 60,
           },
-        }}
+          tabBarIcon: ({ color, size }) => {
+            let iconName;
+
+            if (route.name === 'Dashboard') {
+              iconName = 'dashboard'; // Icon for Dashboard
+            } else if (route.name === 'Customer') {
+              iconName = 'people'; // Icon for Customer
+            }
+
+            return <Icon name={iconName} size={size || 24} color={color} />;
+          },
+        })}
       >
         <Tab.Screen name="Dashboard" component={Dashboard} />
-        <Tab.Screen name="Customer" component={Customer} />
+        <Tab.Screen name="Customer" component={Customer} initialParams={{getToken:token}}/>
       </Tab.Navigator>
     </SafeAreaView>
   );
 };
 
-const Tab = createBottomTabNavigator();
+
 
 export default AdminHome;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ecf0f1', // Light gray background for the app
+    backgroundColor: 'white',
     justifyContent: 'flex-start',
     padding: 10,
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between', // Align logout button and welcome text
+    justifyContent: 'space-between',
     alignItems: 'center',
     padding: 10,
-    backgroundColor: '#fff', // White background for header
-    borderRadius: 10, // Rounded corners for header
+    backgroundColor: '#fff',
+    borderRadius: 10,
     marginBottom: 20,
   },
   welcomeText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#34495E', // Dark color for the welcome text
+    color: '#34495E',
   },
   screenContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff', // White background for the screen sections
-    borderRadius: 10, // Rounded corners for a clean look
+    backgroundColor: '#fff',
+    borderRadius: 10,
     margin: 10,
   },
   screenText: {
     fontSize: 18,
-    color: '#34495E', // Matching the header color
+    color: '#34495E',
+  },
+  customerarea: {
+    margin: 10,
+    padding: 10,
+    backgroundColor: '#f4f4f8', // Light background for the form area
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  textarea: {
+    marginBottom: 15,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#34495E',
+    marginBottom: 5,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    fontSize: 14,
+    backgroundColor: '#fff',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 20,
   },
 });
+

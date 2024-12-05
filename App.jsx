@@ -7,6 +7,7 @@ import { Screen } from 'react-native-screens';
 import AdminLogin from './components/adminlogin';
 import UserLogin from './components/userlogin';
 import AdminHome from './components/adminhome';
+import Customer from './components/customer';
 
 
 const Stack = createStackNavigator();
