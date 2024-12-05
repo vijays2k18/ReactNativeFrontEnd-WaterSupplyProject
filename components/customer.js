@@ -22,14 +22,16 @@ console.log(token,"Customer page get token ..........")
 
 
 useEffect(() => {
-   // Check the route params
-  if (route.params?.getToken) {
-    setToken(route.params.getToken);
-  }
+  // Check the route params
+ if (route.params?.token) {
+   setToken(route.params.token);
+ }
 }, [route.params]);
 
 
 console.log(token,"form cutomer form");
+
+
 
 const handleAddCustomer = async () => {
   if (!name || !phoneNumber || !address) {
