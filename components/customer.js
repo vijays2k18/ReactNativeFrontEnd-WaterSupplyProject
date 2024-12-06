@@ -39,18 +39,32 @@ useEffect(()=>{
 
 const handleAddCustomer = async () => {
   if (!name || !phoneNumber || !address) {
-    Alert.alert('Error', 'Please fill out all fields.');
+    Alert.alert('Validation Error', 'Please fill out all fields.');
+    return;
+  }
+
+  // Validate phone number length
+  if (phoneNumber.length > 10) {
+    Alert.alert('Validation Error', 'Phone number cannot exceed 10 digits.');
     return;
   }
 
   try {
-    const  token = await AsyncStorage.getItem("token")
-    console.log(token)
+    const token = await AsyncStorage.getItem('token');
+
+    if (!token) {
+      Alert.alert('Authentication Error', 'You are not authenticated. Please log in again.');
+      return;
+    }
+
+    console.log(`Token: ${token}`);
+    console.log('Adding new customer:', { name, phoneNumber, address });
+
     const response = await fetch('http://nodejs-api.pixelsscreen.com/api/users', {
       method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         name: name,
@@ -59,36 +73,96 @@ const handleAddCustomer = async () => {
       }),
     });
 
-    const result = await response.json();
+    let result = {};
+    try {
+      result = await response.json();
+    } catch (jsonError) {
+      console.warn('Failed to parse response as JSON:', jsonError);
+    }
 
     if (response.ok) {
-      // If the request is successful
-      Alert.alert('Success', 'Customer added successfully');
+      Alert.alert('Success', 'Customer added successfully.');
       const newCustomer = {
-        id: result.id, // Assuming API returns the customer with an ID
+        id: result.id || Math.random().toString(), // Fallback if no ID is returned
         name,
         phoneNumber,
         address,
       };
+
       setCustomers((prevCustomers) => [...prevCustomers, newCustomer]);
       setName('');
       setPhoneNumber('');
       setAddress('');
       setIsFormVisible(false);
     } else {
-      // If the request failed
-      Alert.alert('Error', result.message || 'Failed to add customer.');
+      const errorMessage = result.message || 'Failed to add customer. Please try again.';
+      Alert.alert('Error', errorMessage);
     }
   } catch (error) {
-    // If there was an error making the request
-    console.error('Error adding customer:', error);
-    Alert.alert('Error', 'Something went wrong. Please try again.');
+    if (error.name === 'TypeError') {
+      console.error('Network error:', error);
+      Alert.alert(
+        'Network Error',
+        'Unable to connect to the server. Please check your internet connection and try again.'
+      );
+    } else {
+      console.error('Unexpected error:', error);
+      Alert.alert('Error', 'An unexpected error occurred. Please try again later.');
+    }
   }
 };
 
-const handleDeleteCustomer = (id) => {
-  setCustomers(customers.filter((customer) => customer.id !== id));
+
+const handleDeleteCustomer = async (id) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      Alert.alert('Authentication Error', 'You are not authenticated. Please log in again.');
+      return;
+    }
+
+    const apiUrl = `http://nodejs-api.pixelsscreen.com/api/users/${id}`;
+    console.log(`API URL: ${apiUrl}`);
+    console.log(`Deleting customer with ID: ${id}`);
+
+    const response = await fetch(apiUrl, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.ok) {
+      Alert.alert('Success', 'Customer deleted successfully.');
+      getAPI(); // Refresh the customer list
+      return;
+    }
+
+    // Attempt to parse error details if available
+    let errorMessage = 'Failed to delete customer.';
+    try {
+      const result = await response.json();
+      errorMessage = result.message || errorMessage;
+    } catch (jsonError) {
+      console.warn('Failed to parse error response:', jsonError);
+    }
+
+    Alert.alert('Error', errorMessage);
+  } catch (error) {
+    if (error.name === 'TypeError') {
+      console.error('Network error or server not reachable:', error);
+      Alert.alert(
+        'Network Error',
+        'Unable to connect to the server. Please check your internet connection and try again.'
+      );
+    } else {
+      console.error('Unexpected error during customer deletion:', error);
+      Alert.alert('Error', 'An unexpected error occurred. Please try again later.');
+    }
+  }
 };
+
 
 const handleEditCustomer = (customer) => {
   setEditingCustomerId(customer.id);
