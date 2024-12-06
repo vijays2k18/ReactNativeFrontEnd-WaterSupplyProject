@@ -45,9 +45,19 @@ const getAPI = async () =>{
   setCustomers(result);
 }
 
-useEffect(()=>{
-  getAPI(); 
-},[])
+useEffect(() => {
+  // Call the function immediately
+  getAPI();
+
+  // Set up the interval to call the function every 15 seconds
+  const intervalId = setInterval(() => {
+    console.log("calling every 15 seconds")
+    getAPI();
+  }, 15000); // 15000ms = 15 seconds
+
+  // Cleanup function to clear the interval when the component unmounts
+  return () => clearInterval(intervalId);
+}, []); 
 
 const handleAddCustomer = async () => {
   if (!name || !phone_number || !address) {
@@ -209,25 +219,64 @@ const handleEditCustomer = (customer) => {
   setIsFormVisible(true);
 };
 
-const handleUpdateCustomer = () => {
+const handleUpdateCustomer = async () => {
   if (!name || !phone_number || !address) {
     Alert.alert('Error', 'Please fill out all fields.');
     return;
   }
 
-  setCustomers(
-    customers.map((customer) =>
-      customer.id === editingCustomerId
-        ? { ...customer, name, phone_number, address }
-        : customer
-    )
-  );
-  setName('');
-  setPhoneNumber('');
-  setAddress('');
-  setEditingCustomerId(null);
-  setIsFormVisible(false);
+  try {
+    const token = await AsyncStorage.getItem('token');
+
+    if (!token) {
+      Alert.alert(
+        'Authentication Error',
+        'You are not authenticated. Please log in again.'
+      );
+      return;
+    }
+    const response = await fetch(`http://nodejs-api.pixelsscreen.com/api/users/${editingCustomerId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name: name,
+        phone_number: phone_number,
+        address: address,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      Alert.alert('Error', errorData.message || 'Failed to update customer.');
+      return;
+    }
+
+    const updatedCustomer = await response.json();
+
+    // Update local state
+    setCustomers(
+      customers.map((customer) =>
+        customer.id === editingCustomerId ? updatedCustomer : customer
+      )
+    );
+
+    // Clear form
+    setName('');
+    setPhoneNumber('');
+    setAddress('');
+    setEditingCustomerId(null);
+    setIsFormVisible(false);
+
+    Alert.alert('Success', 'Customer updated successfully!');
+  } catch (error) {
+    Alert.alert('Error', 'An error occurred while updating the customer.');
+    console.error(error);
+  }
 };
+
 
 return (
   <SafeAreaView style={styles.container}>
