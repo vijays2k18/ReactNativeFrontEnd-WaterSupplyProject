@@ -49,29 +49,47 @@ const handleAddCustomer = async () => {
     return;
   }
 
+  // Check if phone number already exists
+  const existingCustomer = customers.find(
+    (customer) => customer.phone_number === phoneNumber
+  );
+  if (existingCustomer) {
+    Alert.alert(
+      'Validation Error',
+      'A customer with the same phone number already exists.'
+    );
+    return;
+  }
+
   try {
     const token = await AsyncStorage.getItem('token');
 
     if (!token) {
-      Alert.alert('Authentication Error', 'You are not authenticated. Please log in again.');
+      Alert.alert(
+        'Authentication Error',
+        'You are not authenticated. Please log in again.'
+      );
       return;
     }
 
     console.log(`Token: ${token}`);
     console.log('Adding new customer:', { name, phoneNumber, address });
 
-    const response = await fetch('http://nodejs-api.pixelsscreen.com/api/users', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        name: name,
-        phone_number: phoneNumber,
-        address: address,
-      }),
-    });
+    const response = await fetch(
+      'http://nodejs-api.pixelsscreen.com/api/users',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: name,
+          phone_number: phoneNumber,
+          address: address,
+        }),
+      }
+    );
 
     let result = {};
     try {
@@ -85,7 +103,7 @@ const handleAddCustomer = async () => {
       const newCustomer = {
         id: result.id || Math.random().toString(), // Fallback if no ID is returned
         name,
-        phoneNumber,
+        phone_number: phoneNumber,
         address,
       };
 
@@ -95,7 +113,8 @@ const handleAddCustomer = async () => {
       setAddress('');
       setIsFormVisible(false);
     } else {
-      const errorMessage = result.message || 'Failed to add customer. Please try again.';
+      const errorMessage =
+        result.message || 'Failed to add customer. Please try again.';
       Alert.alert('Error', errorMessage);
     }
   } catch (error) {
@@ -107,10 +126,14 @@ const handleAddCustomer = async () => {
       );
     } else {
       console.error('Unexpected error:', error);
-      Alert.alert('Error', 'An unexpected error occurred. Please try again later.');
+      Alert.alert(
+        'Error',
+        'An unexpected error occurred. Please try again later.'
+      );
     }
   }
 };
+
 
 
 const handleDeleteCustomer = async (id) => {
@@ -133,22 +156,23 @@ const handleDeleteCustomer = async (id) => {
       },
     });
 
-    if (response.ok) {
-      Alert.alert('Success', 'Customer deleted successfully.');
-      getAPI(); // Refresh the customer list
-      return;
-    }
-
-    // Attempt to parse error details if available
-    let errorMessage = 'Failed to delete customer.';
+    // Parse the response
+    let result = {};
     try {
-      const result = await response.json();
-      errorMessage = result.message || errorMessage;
+      result = await response.json();
     } catch (jsonError) {
-      console.warn('Failed to parse error response:', jsonError);
+      console.warn('Failed to parse response as JSON:', jsonError);
     }
 
-    Alert.alert('Error', errorMessage);
+    if (response.ok) {
+      Alert.alert('Success', result.message || 'Customer deleted successfully.');
+      getAPI(); 
+    } else if (response.status === 404) {
+      Alert.alert('Error', result.message || 'Customer not found.');
+    } else {
+      const errorMessage = result.message || 'Failed to delete customer.';
+      Alert.alert('Error', errorMessage);
+    }
   } catch (error) {
     if (error.name === 'TypeError') {
       console.error('Network error or server not reachable:', error);
@@ -162,6 +186,7 @@ const handleDeleteCustomer = async (id) => {
     }
   }
 };
+
 
 
 const handleEditCustomer = (customer) => {
