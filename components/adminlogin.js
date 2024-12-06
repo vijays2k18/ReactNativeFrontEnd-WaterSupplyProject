@@ -1,4 +1,4 @@
-import { StyleSheet, View, Image, SafeAreaView, Button, TextInput, Alert } from 'react-native';
+import { StyleSheet, View, Image, SafeAreaView, Button, TextInput, Alert, ActivityIndicator } from 'react-native';
 import React, { useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -6,18 +6,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const AdminLogin = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); // Added loading state
   const navigation = useNavigation();
 
   const postAPIData = async (username, password, navigation) => {
-    // Check if username or password is empty
     if (!username || !password) {
       Alert.alert('Error', 'Please enter both username and password');
       return;
     }
 
+    setLoading(true); // Show loading indicator
+
     try {
       const response = await fetch('http://nodejs-api.pixelsscreen.com/admin/login', {
-        method: 'POST', // Specify HTTP method
+        method: 'POST',
         headers: {
           "Content-Type": "application/json",
         },
@@ -30,8 +32,8 @@ const AdminLogin = () => {
       const result = await response.json();
 
       if (response.ok) {
-        // Store the token in state
-       await AsyncStorage.setItem("token",result.token);
+        // Store the token in AsyncStorage
+        await AsyncStorage.setItem("token", result.token);
 
         // Navigate to AdminHome with the token
         Alert.alert('Success', 'Login successful', [
@@ -48,13 +50,21 @@ const AdminLogin = () => {
           },
         ]);
       } else {
-        // If login fails (e.g., incorrect username/password)
+        // If login fails, show the error message from the API
         Alert.alert('Error', result.message || 'Invalid username or password');
       }
     } catch (error) {
-      // If there is an error with the API call
+      // Catch any errors that occur during the fetch
       console.error('Login API Error:', error);
-      Alert.alert('Error', 'Something went wrong. Please try again later.');
+      if (error.name === 'TypeError') {
+        // Handle network errors
+        Alert.alert('Network Error', 'Please check your internet connection.');
+      } else {
+        // Handle other errors
+        Alert.alert('Error', 'Something went wrong. Please try again later.');
+      }
+    } finally {
+      setLoading(false); // Hide loading indicator after the request completes
     }
   };
 
@@ -82,10 +92,14 @@ const AdminLogin = () => {
 
         <View style={styles.buttonContainer}>
           <Button
-            title="Login"
+            title={loading ? 'Logging In...' : 'Login'}
             onPress={() => postAPIData(username, password, navigation)}
+            disabled={loading} // Disable button while loading
           />
         </View>
+
+        {/* Show loading indicator while the API request is in progress */}
+        {loading && <ActivityIndicator size="large" color="#4CAF50" style={styles.loader} />}
       </View>
     </SafeAreaView>
   );
@@ -99,7 +113,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff5ee', // Light pinkish background
   },
   logoContainer: {
-    flex: 1, // Takes up available space without affecting input fields
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -107,10 +121,10 @@ const styles = StyleSheet.create({
     width: 300,
     height: 300,
     resizeMode: 'contain',
-    marginTop: 80, // Adjusted to prevent overlap
+    marginTop: 80,
   },
   formContainer: {
-    flex: 2, // Allows form to occupy space after the logo
+    flex: 2,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
@@ -125,11 +139,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     paddingHorizontal: 10,
     fontSize: 16,
-    flexShrink: 0, // Prevents collapsing when text is entered
   },
   buttonContainer: {
     marginTop: 20,
     width: '100%',
     borderRadius: 30,
+  },
+  loader: {
+    marginTop: 20,
   },
 });
