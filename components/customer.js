@@ -33,7 +33,7 @@ const onRefresh = async () => {
 };
 const getAPI = async () =>{
   const  token = await AsyncStorage.getItem("token")
-  const response = await fetch('http://nodejs-api.pixelsscreen.com/api/users',{
+  const response = await fetch('https://nodejs-api.pixelsscreen.com/api/users',{
     method: 'GET',
     headers: {
       "Content-Type": "application/json",
@@ -97,7 +97,7 @@ const handleAddCustomer = async () => {
     console.log('Adding new customer:', { name, phone_number, address });
 
     const response = await fetch(
-      'http://nodejs-api.pixelsscreen.com/api/users',
+      'https://nodejs-api.pixelsscreen.com/api/users',
       {
         method: 'POST',
         headers: {
@@ -165,7 +165,7 @@ const handleDeleteCustomer = async (id) => {
       return;
     }
 
-    const apiUrl = `http://nodejs-api.pixelsscreen.com/api/users/${id}`;
+    const apiUrl = `https://nodejs-api.pixelsscreen.com/api/users/${id}`;
     console.log(`API URL: ${apiUrl}`);
     console.log(`Deleting customer with ID: ${id}`);
 
@@ -234,7 +234,7 @@ const handleUpdateCustomer = async () => {
       );
       return;
     }
-    const response = await fetch(`http://nodejs-api.pixelsscreen.com/api/users/${editingCustomerId}`, {
+    const response = await fetch(`https://nodejs-api.pixelsscreen.com/api/users/${editingCustomerId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

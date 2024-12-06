@@ -19,7 +19,7 @@ const AdminLogin = () => {
     setLoading(true); // Show loading indicator
 
     try {
-      const response = await fetch('http://nodejs-api.pixelsscreen.com/admin/login', {
+      const response = await fetch('https://nodejs-api.pixelsscreen.com/admin/login', {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
