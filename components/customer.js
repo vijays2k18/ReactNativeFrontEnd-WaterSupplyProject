@@ -12,8 +12,7 @@ Alert,
 TouchableOpacity,
 RefreshControl,
 } from 'react-native';
-const Customer = ({route}) => {
-const [token, setToken] = useState('');
+const Customer = () => {
 const [name, setName] = useState('');
 const [phone_number, setPhoneNumber] = useState('');
 const [address, setAddress] = useState('');

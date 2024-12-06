@@ -62,7 +62,7 @@ const AdminHome = ({ route }) => {
         })}
       >
         <Tab.Screen name="Dashboard" component={Dashboard} />
-        <Tab.Screen name="Customer" component={Customer} initialParams={{getToken:token}}/>
+        <Tab.Screen name="Customer" component={Customer}/>
       </Tab.Navigator>
     </SafeAreaView>
   );
