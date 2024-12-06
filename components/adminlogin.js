@@ -6,7 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const AdminLogin = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false); // Added loading state
+  const [loading, setLoading] = useState(false); // Loading state for login button
+
   const navigation = useNavigation();
 
   const postAPIData = async (username, password, navigation) => {
@@ -51,7 +52,7 @@ const AdminLogin = () => {
         ]);
       } else {
         // If login fails, show the error message from the API
-        Alert.alert('Error', result.message || 'Invalid username or password');
+        Alert.alert('Error', result.error || 'Invalid username or password');
       }
     } catch (error) {
       // Catch any errors that occur during the fetch
