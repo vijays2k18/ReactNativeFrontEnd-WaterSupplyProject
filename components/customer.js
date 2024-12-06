@@ -10,6 +10,7 @@ SafeAreaView,
 FlatList,
 Alert,
 TouchableOpacity,
+RefreshControl,
 } from 'react-native';
 const Customer = ({route}) => {
 const [token, setToken] = useState('');
@@ -19,7 +20,18 @@ const [address, setAddress] = useState('');
 const [isFormVisible, setIsFormVisible] = useState(false);
 const [customers, setCustomers] = useState([]);
 const [editingCustomerId, setEditingCustomerId] = useState(null);
+const [refreshing, setRefreshing] = useState(false);
 
+const onRefresh = async () => {
+  try {
+    setRefreshing(true); // Show the refresh indicator
+    await getAPI(); // Attempt to re-fetch data
+  } catch (error) {
+    console.error('Error during refresh:', error); // Log any errors
+  } finally {
+    setRefreshing(false); // Ensure the refresh indicator is hidden
+  }
+};
 const getAPI = async () =>{
   const  token = await AsyncStorage.getItem("token")
   const response = await fetch('http://nodejs-api.pixelsscreen.com/api/users',{
@@ -305,6 +317,9 @@ return (
           </View>
         </View>
       )}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
     />
   </SafeAreaView>
 );
