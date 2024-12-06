@@ -15,7 +15,7 @@ RefreshControl,
 const Customer = ({route}) => {
 const [token, setToken] = useState('');
 const [name, setName] = useState('');
-const [phoneNumber, setPhoneNumber] = useState('');
+const [phone_number, setPhoneNumber] = useState('');
 const [address, setAddress] = useState('');
 const [isFormVisible, setIsFormVisible] = useState(false);
 const [customers, setCustomers] = useState([]);
@@ -50,20 +50,20 @@ useEffect(()=>{
 },[])
 
 const handleAddCustomer = async () => {
-  if (!name || !phoneNumber || !address) {
+  if (!name || !phone_number || !address) {
     Alert.alert('Validation Error', 'Please fill out all fields.');
     return;
   }
 
   // Validate phone number length
-  if (phoneNumber.length > 10) {
+  if (phone_number.length > 10) {
     Alert.alert('Validation Error', 'Phone number cannot exceed 10 digits.');
     return;
   }
 
   // Check if phone number already exists
   const existingCustomer = customers.find(
-    (customer) => customer.phone_number === phoneNumber
+    (customer) => customer.phone_number === phone_number
   );
   if (existingCustomer) {
     Alert.alert(
@@ -85,7 +85,7 @@ const handleAddCustomer = async () => {
     }
 
     console.log(`Token: ${token}`);
-    console.log('Adding new customer:', { name, phoneNumber, address });
+    console.log('Adding new customer:', { name, phone_number, address });
 
     const response = await fetch(
       'http://nodejs-api.pixelsscreen.com/api/users',
@@ -97,7 +97,7 @@ const handleAddCustomer = async () => {
         },
         body: JSON.stringify({
           name: name,
-          phone_number: phoneNumber,
+          phone_number: phone_number,
           address: address,
         }),
       }
@@ -115,7 +115,7 @@ const handleAddCustomer = async () => {
       const newCustomer = {
         id: result.id || Math.random().toString(), // Fallback if no ID is returned
         name,
-        phone_number: phoneNumber,
+        phone_number: phone_number,
         address,
       };
 
@@ -204,13 +204,13 @@ const handleDeleteCustomer = async (id) => {
 const handleEditCustomer = (customer) => {
   setEditingCustomerId(customer.id);
   setName(customer.name);
-  setPhoneNumber(customer.phoneNumber);
+  setPhoneNumber(customer.phone_number);
   setAddress(customer.address);
   setIsFormVisible(true);
 };
 
 const handleUpdateCustomer = () => {
-  if (!name || !phoneNumber || !address) {
+  if (!name || !phone_number || !address) {
     Alert.alert('Error', 'Please fill out all fields.');
     return;
   }
@@ -218,7 +218,7 @@ const handleUpdateCustomer = () => {
   setCustomers(
     customers.map((customer) =>
       customer.id === editingCustomerId
-        ? { ...customer, name, phoneNumber, address }
+        ? { ...customer, name, phone_number, address }
         : customer
     )
   );
@@ -263,7 +263,7 @@ return (
             style={styles.input}
             placeholder="Enter Customer Phone Number"
             keyboardType="phone-pad"
-            value={phoneNumber}
+            value={phone_number}
             onChangeText={setPhoneNumber}
           />
         </View>
