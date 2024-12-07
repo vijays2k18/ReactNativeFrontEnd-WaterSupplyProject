@@ -17,7 +17,6 @@ const Dashboard = () => (
 const Tab = createBottomTabNavigator();
 
 const AdminHome = ({ route }) => {
-  const [token, setToken] = useState('');
   const navigation = useNavigation(); // Use navigation for logout button
   const data = route.params;
 
