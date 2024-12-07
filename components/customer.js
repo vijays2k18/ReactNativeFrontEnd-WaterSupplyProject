@@ -65,8 +65,8 @@ const handleAddCustomer = async () => {
   }
 
   // Validate phone number length
-  if (phone_number.length > 10) {
-    Alert.alert('Validation Error', 'Phone number cannot exceed 10 digits.');
+  if (phone_number.length !== 10) {
+    Alert.alert('Validation Error', 'Phone number must be exactly 10 digits.');
     return;
   }
 
@@ -224,6 +224,10 @@ const handleUpdateCustomer = async () => {
     return;
   }
 
+  if (phone_number.length !== 10) {
+    Alert.alert('Validation Error', 'Phone number must be exactly 10 digits.');
+    return;
+  }
   try {
     const token = await AsyncStorage.getItem('token');
 
