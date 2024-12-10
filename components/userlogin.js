@@ -46,7 +46,14 @@ const UserLogin = () => {
         Alert.alert('Success', 'Login successful.', [
           {
             text: 'OK',
-            onPress: () => navigation.navigate('CustomerHome')
+            onPress: () => {
+              navigation.reset({
+                index: 0,
+                routes: [
+                  {name: 'CustomerHome'}
+                ],
+              });
+            },
           },
         ]);
       } else {
