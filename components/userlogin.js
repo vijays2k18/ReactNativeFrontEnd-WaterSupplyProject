@@ -39,6 +39,7 @@ const UserLogin = () => {
         console.log('Login successful', data);
         await AsyncStorage.setItem("token", data.token);
         await AsyncStorage.setItem("userId", data.userId.toString());
+        await AsyncStorage.setItem("name",data.name);
         console.log(data.userId)
      
         // Navigate to customerhome with userId as a parameter

@@ -14,15 +14,18 @@ const CustomerHome = () => {
   const [dateTime, setDateTime] = useState('');
   const [token, setToken] = useState('');
   const [userId, setUserId] = useState(null);
+  const [username,setUserName] = useState('');
   const navigation = useNavigation();
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const storedToken = await AsyncStorage.getItem("token");
-        const storedUserId = await AsyncStorage.getItem("userId");
+        // const storedUserId = await AsyncStorage.getItem("userId");
+        const storeUserName = await AsyncStorage.getItem("name");
         setToken(storedToken);
-        setUserId(Number(storedUserId)); // Convert userId to a number
+        // setUserId(Number(storedUserId));// Convert userId to a number
+        setUserName(storeUserName);
       } catch (err) {
         console.error('Error retrieving user data:', err);
       }
@@ -44,7 +47,7 @@ const CustomerHome = () => {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem(token);
       console.log( await AsyncStorage.removeItem('token'))
       Alert.alert('Logged Out', 'You have been logged out.', [
         {
@@ -61,7 +64,8 @@ const CustomerHome = () => {
     <View style={styles.container}>
       {/* Top Row: User ID and Logout Button */}
       <View style={styles.topRow}>
-        <Text style={styles.userIdText}>ID: {userId}</Text>
+        <View> 
+        <Text style={styles.userIdText}>{username}</Text> </View>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
