@@ -9,12 +9,14 @@ import UserLogin from './components/userlogin';
 import AdminHome from './components/adminhome';
 import Customer from './components/customer';
 import CustomerHome from './components/customerhome';
+import { Provider as PaperProvider } from 'react-native-paper';
 
 
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
+    <PaperProvider> 
     <NavigationContainer>
       <SafeAreaView style={styles.container}>
         <Stack.Navigator initialRouteName="Main" screenOptions={{
@@ -28,6 +30,7 @@ const App = () => {
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>
+    </PaperProvider>
   );
 };
 
