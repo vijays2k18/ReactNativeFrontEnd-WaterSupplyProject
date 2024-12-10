@@ -22,10 +22,11 @@ const Customer = () => {
   const [editingCustomerId, setEditingCustomerId] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const [menuVisible, setMenuVisible] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(null);
 
-  const openMenu = () => setMenuVisible(true);
-  const closeMenu = () => setMenuVisible(false);
+  const openMenu = (id) => setMenuVisible(id);
+const closeMenu = () => setMenuVisible(null);
+
 
   const onRefresh = async () => {
     try {
@@ -357,34 +358,35 @@ const Customer = () => {
               <Text style={styles.customerDetails}>Address: {item.address}</Text>
             </View>
             <View style={styles.menuContainer}>
-              <Menu
-                visible={menuVisible}
-                onDismiss={closeMenu}
-                anchor={
-                  <IconButton
-                    icon="dots-vertical" // Three dots icon
-                    size={24}
-                    onPress={openMenu}
-                  />
-                }
-              >
-                <Menu.Item
-                  onPress={() => {
-                    closeMenu();
-                    handleEditCustomer(item); // Trigger Edit
-                  }}
-                  title="Edit"
-                  icon="pencil"
-                />
-                <Menu.Item
-                  onPress={() => {
-                    closeMenu();
-                    handleDeleteCustomer(item.id); // Trigger Delete
-                  }}
-                  title="Delete"
-                  icon="delete"
-                />
-              </Menu>
+            <Menu
+  visible={menuVisible === item.id}
+  onDismiss={closeMenu}
+  anchor={
+    <IconButton
+      icon="dots-vertical"
+      size={24}
+      onPress={() => openMenu(item.id)}
+    />
+  }
+>
+  <Menu.Item
+    onPress={() => {
+      closeMenu();
+      handleEditCustomer(item); // Trigger Edit
+    }}
+    title="Edit"
+    icon="pencil"
+  />
+  <Menu.Item
+    onPress={() => {
+      closeMenu();
+      handleDeleteCustomer(item.id); // Trigger Delete
+    }}
+    title="Delete"
+    icon="delete"
+  />
+</Menu>
+
 
             </View>
           </View>
