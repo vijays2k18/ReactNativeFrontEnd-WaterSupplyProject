@@ -45,10 +45,11 @@ const CustomerHome = () => {
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('token');
+      console.log( await AsyncStorage.removeItem('token'))
       Alert.alert('Logged Out', 'You have been logged out.', [
         {
           text: 'OK',
-          onPress: () => navigation.replace('Login'),
+          onPress: () => navigation.replace('UserLogin'),
         },
       ]);
     } catch (err) {
