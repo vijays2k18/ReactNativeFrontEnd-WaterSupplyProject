@@ -1,30 +1,70 @@
 import { StyleSheet, Text, View, Image, SafeAreaView, Button, TextInput, Alert } from 'react-native';
 import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const UserLogin = () => {
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phone_number, setPhoneNumber] = useState('');
 
-  const handleLogin = () => {
-    // Validate phone number (ensure it has between 10 and 15 digits)
-    if (phoneNumber.length < 10) {
-      Alert.alert("Invalid Phone Number", "Phone number must be at least 10 digits.");
-    } else if (phoneNumber.length > 10) {
-      Alert.alert("Invalid Phone Number", "Phone number cannot be more than 10 digits.");
-    } else {
-      // Proceed with login logic here
-      Alert.alert("Login Successful", `Welcome, ${phoneNumber}`);
+  const navigation = useNavigation();
+
+  const handleLogin = async () => {
+    console.log('Login button clicked');
+  
+    // Validate phone number presence
+    if (!phone_number) {
+      Alert.alert('Validation Error', 'Phone number is required.');
+      return;
+    }
+  
+    // Validate phone number length
+    if (phone_number.length !== 10) {
+      Alert.alert('Validation Error', 'Phone number must be exactly 10 digits long.');
+      return;
+    }
+  
+    try {
+      const response = await fetch('https://nodejs-api.pixelsscreen.com/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phone_number }),
+      });
+  
+      // Parse response
+      const data = await response.json();
+  
+      if (response.ok) {
+        console.log('Login successful', data);
+        await AsyncStorage.setItem("token", data.token);
+        await AsyncStorage.setItem("userId", data.userId.toString());
+        console.log(data.userId)
+     
+        // Navigate to customerhome with userId as a parameter
+        Alert.alert('Success', 'Login successful.', [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate('CustomerHome')
+          },
+        ]);
+      } else {
+        // Server-side validation failure (e.g., phone number not found)
+        if (data.message) {
+          Alert.alert('Login Failed', data.message);
+        } else {
+          Alert.alert('Login Failed', 'Something went wrong. Please try again later.');
+        }
+      }
+    } catch (err) {
+      // Network or unexpected error
+      console.error('Error during login:', err.message);
+      Alert.alert('Error', 'An unexpected error occurred. Please check your connection and try again.');
     }
   };
+  
 
-  const handlePhoneNumberChange = (text) => {
-    if (text.length > 10) {
-      Alert.alert("Invalid Phone Number", "Phone number cannot be more than 15 digits.");
-      setPhoneNumber('');  // Clear the phone number input
-    } else {
-      setPhoneNumber(text);
-    }
-  };
-
+  
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.logoContainer}>
@@ -32,14 +72,14 @@ const UserLogin = () => {
       </View>
 
       <View style={styles.formContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter Your Phone Number"
-          keyboardType="phone-pad"  // Ensures numeric input
-          value={phoneNumber}
-          onChangeText={handlePhoneNumberChange}  // Use the updated handler
-          maxLength={15}  // Restrict user input to 15 characters
-        />
+      <TextInput
+  style={styles.input}
+  placeholder="Enter Your Phone Number"
+  keyboardType="phone-pad" // Ensures numeric input
+  value={phone_number}
+  onChangeText={(number) => setPhoneNumber(number)} // Correctly updates the state
+  maxLength={15} // Restrict user input to 15 characters
+/>
 
         <View style={styles.buttonContainer}>
           <Button title="Login" onPress={handleLogin} />

@@ -8,6 +8,7 @@ import AdminLogin from './components/adminlogin';
 import UserLogin from './components/userlogin';
 import AdminHome from './components/adminhome';
 import Customer from './components/customer';
+import CustomerHome from './components/customerhome';
 
 
 const Stack = createStackNavigator();
@@ -23,6 +24,7 @@ const App = () => {
           <Stack.Screen name="UserLogin" component={UserLogin}/> 
           <Stack.Screen name="AdminLogin" component={AdminLogin}/> 
           <Stack.Screen name="AdminHome" component={AdminHome}/>
+          <Stack.Screen name="CustomerHome" component={CustomerHome}/>
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>
