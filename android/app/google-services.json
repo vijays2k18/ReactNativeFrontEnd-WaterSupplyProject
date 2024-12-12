@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "31288725650",
+    "project_id": "pushnotification-e4015",
+    "storage_bucket": "pushnotification-e4015.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:31288725650:android:9249cef93bca524528564b",
+        "android_client_info": {
+          "package_name": "com.watersupplyproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBO7pEm4ChBUNZSbbsJTzwxXRFBsWZ5VQE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
