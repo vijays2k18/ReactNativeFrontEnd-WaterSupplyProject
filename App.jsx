@@ -10,7 +10,6 @@ import AdminHome from './components/adminhome';
 import Customer from './components/customer';
 import CustomerHome from './components/customerhome';
 import { Provider as PaperProvider } from 'react-native-paper';
-import Notification from './components/notification';
 
 
 const Stack = createStackNavigator();
@@ -20,7 +19,7 @@ const App = () => {
     <PaperProvider> 
     <NavigationContainer>
       <SafeAreaView style={styles.container}>
-        <Stack.Navigator initialRouteName="Notification" screenOptions={{
+        <Stack.Navigator initialRouteName="Main" screenOptions={{
           headerShown:false
         }}>
           <Stack.Screen name="Main" component={Main}/> 
@@ -28,7 +27,6 @@ const App = () => {
           <Stack.Screen name="AdminLogin" component={AdminLogin}/> 
           <Stack.Screen name="AdminHome" component={AdminHome}/>
           <Stack.Screen name="CustomerHome" component={CustomerHome}/>
-          <Stack.Screen name="Notification" component={Notification}/>
         </Stack.Navigator>
       </SafeAreaView>
     </NavigationContainer>
