@@ -14,7 +14,7 @@ import { ImageBackground } from 'react-native';
 const CustomerHome = () => {
   const [dateTime, setDateTime] = useState('');
   const [token, setToken] = useState('');
-  const [userId, setUserId] = useState(null);
+  const [userId, setUserId] = useState('');
   const [username,setUserName] = useState('');
   const [request,setRequest] = useState('')
   const navigation = useNavigation();
@@ -29,6 +29,7 @@ const CustomerHome = () => {
         setToken(storedToken);
         setUserId(storedUserId);// Convert userId to a number
         setUserName(storeUserName);
+        console.log(storedUserId,"-----------kanna user id------------------");
       } catch (err) {
         console.error('Error retrieving user data:', err);
       }
@@ -80,6 +81,7 @@ const CustomerHome = () => {
       const data = await response.json();
       console.log(data,"dataaaaaaaaaaaa")
       Alert.alert('Success', data.message);
+      console.log(userId,'-------Navigation to Dashboard Page---------')
     } catch (error) {
       console.error('API Error:', error);
       Alert.alert('Error', error.message);
@@ -105,8 +107,8 @@ const CustomerHome = () => {
   useEffect(() => {
     const fetchUserStatuses = async () => {
       const storedToken1 = await AsyncStorage.getItem("token");
-
-      console.log("working")
+      console.log("working");
+  
       try {
         const response = await fetch('https://nodejs-api.pixelsscreen.com/users/status', {
           method: 'GET',
@@ -115,30 +117,48 @@ const CustomerHome = () => {
             'Content-Type': 'application/json',
           },
         });
-
+  
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Failed to fetch user statuses');
         }
+  
+        const responseData = await response.json();
+console.log(responseData, "Full response data from API");
 
-        const data = await response.json();
-        console.log(data,"getuser")
-        setRequest(data[0].requested)
-        console.log(request,"--------Request Data -------------")
-        console.log(typeof(request),"Type -----------")
+const storedUserId = await AsyncStorage.getItem("userId");
+const userId1 = Number(storedUserId); // Ensure this is dynamic if needed
+console.log(userId1, "Value of userId being used for lookup");
+
+          console.log(typeof(userId1),"-------------type checking------------------")
+
+// Map response data to only include the user with the matching userId
+const matchedUsers = responseData.filter((item) => Number(item.user_id) === userId1); 
+console.log(matchedUsers, "Filtered users matching userId");
+
+// Check if there is any matched user
+if (matchedUsers.length > 0) {
+  const user = matchedUsers[0]; // Assume the first match (if unique user IDs)
+  setRequest(user.requested);
+  console.log(user.requested, "user requested number");
+} else {
+  setRequest(null); // No match found
+  console.log("No matching user found");
+}
+
       } catch (err) {
         setError(err.message);
+        console.error(err);
       }
     };
-
-    // Fetch data immediately and then every 2 seconds
+  
     fetchUserStatuses();
     const intervalId = setInterval(fetchUserStatuses, 2000);
-
-    // Cleanup on unmount
+  
     return () => clearInterval(intervalId);
   }, []);
-
+  
+  
   return (
     <View style={styles.container}>
       {/* Top Row: User ID and Logout Button */}

@@ -5,13 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons'; // Import MaterialIcons or another icon set
 import Customer from './customer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const Dashboard = () => (
-  <View style={styles.screenContainer}>
-    <Text style={styles.screenText}>Dashboard</Text>
-  </View>
-);
-
+import Dashboard from './admindashboard';
 
 
 const Tab = createBottomTabNavigator();
