@@ -19,7 +19,7 @@ const App = () => {
     <PaperProvider> 
     <NavigationContainer>
       <SafeAreaView style={styles.container}>
-        <Stack.Navigator initialRouteName="CustomerHome" screenOptions={{
+        <Stack.Navigator initialRouteName="Main" screenOptions={{
           headerShown:false
         }}>
           <Stack.Screen name="Main" component={Main}/> 

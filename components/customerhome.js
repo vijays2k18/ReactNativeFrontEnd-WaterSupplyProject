@@ -16,16 +16,18 @@ const CustomerHome = () => {
   const [token, setToken] = useState('');
   const [userId, setUserId] = useState(null);
   const [username,setUserName] = useState('');
+  const [UserStatuses,setUserStatuses]=useState(null);
   const navigation = useNavigation();
+
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const storedToken = await AsyncStorage.getItem("token");
-        // const storedUserId = await AsyncStorage.getItem("userId");
+        const storedUserId = await AsyncStorage.getItem("userId");
         const storeUserName = await AsyncStorage.getItem("name");
         setToken(storedToken);
-        // setUserId(Number(storedUserId));// Convert userId to a number
+        setUserId(storedUserId);// Convert userId to a number
         setUserName(storeUserName);
       } catch (err) {
         console.error('Error retrieving user data:', err);
@@ -45,6 +47,46 @@ const CustomerHome = () => {
 
     return () => clearInterval(interval); // Clean up on unmount
   }, []);
+
+  const requestwater = async () => {
+    console.log('button works'); // Ensure this is printed when button is clicked
+    console.log('Token:', token);
+    console.log('User ID:', userId);
+    const id = Number(userId)
+  
+    if (!userId.trim()) {
+      Alert.alert('Validation Error', 'Please enter a valid User ID');
+      return;
+    }
+ 
+    try {
+      const response = await fetch('https://nodejs-api.pixelsscreen.com/user/requested', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: id,
+        }),
+      });
+  
+      console.log('API response:', response); // Log the response object
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'An error occurred');
+      }
+  
+      const data = await response.json();
+      console.log(data,"dataaaaaaaaaaaa")
+      Alert.alert('Success', data.message);
+    } catch (error) {
+      console.error('API Error:', error);
+      Alert.alert('Error', error.message);
+    }
+  };
+  
 
   const handleLogout = async () => {
     try {
@@ -87,9 +129,7 @@ const CustomerHome = () => {
 <View style={styles.buttonWrapper}>
       <Button
         title="Request Water"
-        onPress={() =>
-          Alert.alert('Request Submitted', 'Your water request has been submitted.')
-        }
+        onPress={requestwater}
         color="black" // Text color for the button
       />
     </View>
