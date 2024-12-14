@@ -5,6 +5,7 @@ import {
   View,
   TouchableOpacity,
   Alert,
+  Button
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -83,20 +84,21 @@ const CustomerHome = () => {
     imageStyle={{ borderRadius: 75 }} // Image style for rounded corners
   />
 
-  <TouchableOpacity
-    onPress={() =>
-      Alert.alert('Request Submitted', 'Your water request has been submitted.')
-    }
-  >
-    <Text style={styles.buttonText}>Request Water</Text>
-  </TouchableOpacity>
+<View style={styles.buttonWrapper}>
+      <Button
+        title="Request Water"
+        onPress={() =>
+          Alert.alert('Request Submitted', 'Your water request has been submitted.')
+        }
+        color="black" // Text color for the button
+      />
+    </View>
 </View>
 
 
     </View>
   );
 };
-
 export default CustomerHome;
 
 const styles = StyleSheet.create({
@@ -176,6 +178,18 @@ const styles = StyleSheet.create({
       color: '#00796b', // Deep teal for text
       fontWeight: '600',
       marginBottom: 20, // Adjusted to give some space between the time and button
+    },
+    buttonWrapper: {
+      width: 150, // Button width
+      height: 50, // Button height
+      borderRadius: 20,
+      backgroundColor: 'lightblue', // Button background color
+      justifyContent: 'center', // Center text vertically
+      alignItems: 'center', // Center text horizontally
+      marginTop: 20, // Add spacing
+      borderWidth: 1,
+      borderColor: 'black', // Border color to match style
+      overflow: 'hidden', // Ensures round corners are properly clipped
     },
   });
   
