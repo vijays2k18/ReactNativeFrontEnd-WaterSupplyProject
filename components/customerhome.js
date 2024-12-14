@@ -16,7 +16,8 @@ const CustomerHome = () => {
   const [token, setToken] = useState('');
   const [userId, setUserId] = useState(null);
   const [username,setUserName] = useState('');
-  const [UserStatuses,setUserStatuses]=useState(null);
+  const [userStatuses, setUserStatuses] = useState([]);
+
   const navigation = useNavigation();
 
 
@@ -52,7 +53,6 @@ const CustomerHome = () => {
     console.log('button works'); // Ensure this is printed when button is clicked
     console.log('Token:', token);
     console.log('User ID:', userId);
-    const id = Number(userId)
   
     if (!userId.trim()) {
       Alert.alert('Validation Error', 'Please enter a valid User ID');
@@ -67,7 +67,7 @@ const CustomerHome = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          userId: id,
+          userId: userId,
         }),
       });
   
@@ -102,6 +102,41 @@ const CustomerHome = () => {
       Alert.alert('Error', 'Unable to log out. Please try again.');
     }
   };
+
+  useEffect(() => {
+    const fetchUserStatuses = async () => {
+      const storedToken1 = await AsyncStorage.getItem("token");
+
+      console.log("working")
+      try {
+        const response = await fetch('https://nodejs-api.pixelsscreen.com/users/status', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${storedToken1}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch user statuses');
+        }
+
+        const data = await response.json();
+        console.log(data,"getuser")
+        setUserStatuses(data);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    // Fetch data immediately and then every 2 seconds
+    fetchUserStatuses();
+    const intervalId = setInterval(fetchUserStatuses, 2000);
+
+    // Cleanup on unmount
+    return () => clearInterval(intervalId);
+  }, []);
 
   return (
     <View style={styles.container}>
