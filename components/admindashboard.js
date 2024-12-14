@@ -3,8 +3,10 @@ import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Dashboard = () => {
-  const [userStatuses, setUserStatuses] = useState([]); // State to store user statuses
   const [error, setError] = useState(null); // State to store error messages
+  const [userIds, setUserIds] = useState([]);
+
+ 
 
   useEffect(() => {
     const fetchStatuses = async () => {
@@ -12,7 +14,7 @@ const Dashboard = () => {
       const token = await AsyncStorage.getItem('token'); // Fetch token from AsyncStorage
       console.log(token, 'Token from AsyncStorage');
       try {
-        const response = await fetch('http://nodejs-api.pixelsscreen.com/users/status', {
+        const response = await fetch('https://nodejs-api.pixelsscreen.com/users/status', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -21,11 +23,19 @@ const Dashboard = () => {
         });
 
         if (response.ok) {
-          const data = await response.json();
-          setUserStatuses(data); // Set the fetched statuses
-          setError(null);
-          console.log(userStatuses,"------UserStatus---Console")
-        } else {
+            const data = await response.json();
+            console.log(data, "------------data from getuserstatus---------------");
+          
+            // Extract all user_id values into an array
+            const userIds = data.map((item) => item.user_id);
+            console.log(userIds, "Extracted user IDs");
+            setUserIds(userIds);
+            console.log(userIds,"----------data comming from array-----------------")
+            setError(null);
+          
+            // If needed, store the userIds in a state or use them directly
+            // setUserIds(userIds); // Uncomment if you have a state for user IDs
+          } else {
           const errorData = await response.json();
           setError(errorData.message || 'Error fetching user statuses');
         }
