@@ -16,8 +16,7 @@ const CustomerHome = () => {
   const [token, setToken] = useState('');
   const [userId, setUserId] = useState(null);
   const [username,setUserName] = useState('');
-  const [userStatuses, setUserStatuses] = useState([]);
-
+  const [request,setRequest] = useState('')
   const navigation = useNavigation();
 
 
@@ -124,7 +123,9 @@ const CustomerHome = () => {
 
         const data = await response.json();
         console.log(data,"getuser")
-        setUserStatuses(data);
+        setRequest(data[0].requested)
+        console.log(request,"--------Request Data -------------")
+        console.log(typeof(request),"Type -----------")
       } catch (err) {
         setError(err.message);
       }
@@ -161,12 +162,22 @@ const CustomerHome = () => {
     imageStyle={{ borderRadius: 75 }} // Image style for rounded corners
   />
 
-<View style={styles.buttonWrapper}>
-      <Button
-        title="Request Water"
-        onPress={requestwater}
-        color="black" // Text color for the button
-      />
+<View style={styles.container}>
+      {request === 1 && (
+        <Text style={styles.message}>Your request has been submitted successfully.</Text>
+      )}
+      {request === 2 && (
+        <Text style={styles.message}>Your request has been approved!</Text>
+      )}
+      {(request === 0 || request === 3) && (
+        <View style={styles.buttonWrapper}>
+          <Button
+            title="Request Water"
+            onPress={requestwater}
+            color="black"
+          />
+        </View>
+      )}
     </View>
 </View>
 
@@ -265,6 +276,17 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderColor: 'black', // Border color to match style
       overflow: 'hidden', // Ensures round corners are properly clipped
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    message: {
+      fontSize: 16,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      marginVertical: 16,
     },
   });
   
