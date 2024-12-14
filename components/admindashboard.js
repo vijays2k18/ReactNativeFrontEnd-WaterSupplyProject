@@ -1,18 +1,20 @@
-import { StyleSheet, Text, View, FlatList } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Dashboard = () => {
   const [error, setError] = useState(null); // State to store error messages
   const [userIds, setUserIds] = useState([]);
-  const [users, setUsers] = useState([]);  // Store user details
-  const [requsted,setRequested] = useState([])
+  const [users, setUsers] = useState([]); // Store user details
+  const [requested, setRequested] = useState([]); // Fix typo
 
+  const [combinedData, setCombinedData] = useState([]);
 
-
+  // Fetch user statuses periodically
   useEffect(() => {
     const fetchStatuses = async () => {
-      const token = await AsyncStorage.getItem('token'); // Fetch token from AsyncStorage
+      const token = await AsyncStorage.getItem('token');// Fetch token from AsyncStorage
+      console.log(token,"token")
       try {
         const response = await fetch('https://nodejs-api.pixelsscreen.com/users/status', {
           method: 'GET',
@@ -23,20 +25,11 @@ const Dashboard = () => {
         });
 
         if (response.ok) {
-            const data = await response.json();
-          
-            // Extract all user_id values into an array
-            const userIds = data.map((item) => item.user_id);
-            const requested1 = data.map((item) => item.requested);
-            setRequested(requested1);
-            setUserIds(userIds);
-            console.log(data,"------Receiving Data-------------------")
-
-            setError(null);
-          
-            // If needed, store the userIds in a state or use them directly
-            // setUserIds(userIds); // Uncomment if you have a state for user IDs
-          } else {
+          const data = await response.json();
+          setUserIds(data.map((item) => item.user_id));
+          setRequested(data.map((item) => ({ id: item.user_id, requested: item.requested })));
+          setError(null);
+        } else {
           const errorData = await response.json();
           setError(errorData.message || 'Error fetching user statuses');
         }
@@ -52,75 +45,114 @@ const Dashboard = () => {
 
     // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
-  }, []); // Empty dependency array, so it runs only once
+  }, []);
 
-
+  // Fetch user details when userIds change
   useEffect(() => {
-    // Function to fetch user details by ID
     const fetchUserDetails = async () => {
-        console.log(requsted,"------************ Data-------------------")
-
-        console.log(userIds,"useridcomming")
-        const token = await AsyncStorage.getItem('token'); // Fetch token from AsyncStorage
-        console.log(token,"bearertoken----------")
+      const token = await AsyncStorage.getItem('token'); // Fetch token from AsyncStorage
       try {
-        const userPromises = userIds.map(id =>
-            fetch(`https://nodejs-api.pixelsscreen.com/api/users/${id}`, {
-              method: 'GET',  // Default method is GET, but you can specify it for clarity
-              headers: {
-                Authorization: `Bearer ${token}`,  // Adding the Bearer token to the headers
-                'Content-Type': 'application/json',
-              },
-            })
-              .then((response) => response.json())
-          );
+        const userPromises = userIds.map((id) =>
+          fetch(`https://nodejs-api.pixelsscreen.com/api/users/${id}`, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }).then((response) => response.json())
+        );
 
         const userResponses = await Promise.all(userPromises);
         setUsers(userResponses); // Save all user details
-        console.log(users,"users-------------------------")
-
       } catch (error) {
+        setError('Error fetching user details');
         console.error('Error fetching user details:', error);
       }
     };
 
-    fetchUserDetails();
-  }, [userIds]); 
+    if (userIds.length > 0) {
+      fetchUserDetails();
+    }
+  }, [userIds]);
 
+  // Combine `users` and `requested` arrays
+  useEffect(() => {
+    const combined = users.map((user) => ({
+      ...user,
+      requested: requested.find((req) => req.id === user.id)?.requested || null, // Match by ID
+    }));
 
+    setCombinedData(combined);
+  }, [users, requested]);
+
+  // Handle button actions
+  const handleApproval = (id) => {
+    console.log(`Approval button clicked for item ID: ${id}`);
+    // Add your approval logic here
+  };
+
+  const handleDelivery = (id) => {
+    console.log(`Delivery button clicked for item ID: ${id}`);
+    // Add your delivery logic here
+  };
+
+  // Render each user item
   const renderItem = ({ item }) => (
     <View style={styles.card}>
-      <Text style={styles.userName}>Name: {item.name}</Text>
-      <Text style={styles.userPhone}>Phone: {item.phone_number}</Text>
-      <Text style={styles.userAddress}>Address: {item.address}</Text>
+      {/* Only show details if requested is not 3 */}
+      {item.requested !== 3 && (
+        <>
+          <Text style={styles.userName}>Name: {item.name}</Text>
+          <Text style={styles.userPhone}>Phone: {item.phone_number}</Text>
+          <Text style={styles.userAddress}>Address: {item.address}</Text>
+        </>
+      )}
+  
+      {/* Conditional buttons */}
+      <View style={styles.buttonContainer}>
+        {item.requested === 1 && (
+          <TouchableOpacity
+            style={styles.approvedButton}
+            onPress={() => handleApproval(item.id)}
+          >
+            <Text style={styles.buttonText}>Approved</Text>
+          </TouchableOpacity>
+        )}
+        {item.requested === 2 && (
+          <TouchableOpacity
+            style={styles.deliveryButton}
+            onPress={() => handleDelivery(item.id)}
+          >
+            <Text style={styles.buttonText}>Delivery</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </View>
   );
+  
+  
 
   return (
     <View style={styles.screenContainer}>
-      <Text style={styles.screenText}>Dashboard</Text>
+      <Text style={styles.screenText}>Customer Request </Text>
+      {error && <Text style={styles.errorText}>{error}</Text>}
       <FlatList
-      data={users}
-      renderItem={renderItem}
-      keyExtractor={(item) => item.id.toString()}  // Assuming 'id' is a unique key
-    />    
+        data={combinedData}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()} // Assuming 'id' is a unique key
+      />
     </View>
   );
 };
 
 export default Dashboard;
 
+// Styles
 const styles = StyleSheet.create({
   screenContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#fff',
     padding: 10,
-  },
-  flatListContainer: {
-    padding: 10,
-    // Add padding around the FlatList
   },
   screenText: {
     fontSize: 18,
@@ -132,38 +164,50 @@ const styles = StyleSheet.create({
     color: 'red',
     marginBottom: 10,
   },
-  statusItem: {
-    padding: 10,
-    backgroundColor: '#f9f9f9',
-    marginVertical: 5,
-    borderRadius: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 3,
-    elevation: 2,
-  },
   card: {
+    padding: 16,
+    marginVertical: 8,
     backgroundColor: '#fff',
-    padding: 15,
-    marginBottom: 10,
     borderRadius: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
-    gap:10
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
   },
   userName: {
+    fontSize: 16,
     fontWeight: 'bold',
-    fontSize: 18,
+    marginBottom: 4,
   },
   userPhone: {
-    marginVertical: 5,
-    fontSize: 16,
+    fontSize: 14,
+    marginBottom: 4,
   },
   userAddress: {
-    fontSize: 16,
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  approvedButton: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+    marginRight: 8,
+  },
+  deliveryButton: {
+    backgroundColor: '#2196F3',
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+  },
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 });
