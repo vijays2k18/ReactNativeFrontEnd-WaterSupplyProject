@@ -14,7 +14,6 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStatuses = async () => {
       const token = await AsyncStorage.getItem('token');// Fetch token from AsyncStorage
-      console.log(token,"token")
       try {
         const response = await fetch('https://nodejs-api.pixelsscreen.com/users/status', {
           method: 'GET',
@@ -86,10 +85,49 @@ const Dashboard = () => {
   }, [users, requested]);
 
   // Handle button actions
-  const handleApproval = (id) => {
+  const handleApproval = async (id) => {
     console.log(`Approval button clicked for item ID: ${id}`);
-    // Add your approval logic here
+    const token = await AsyncStorage.getItem('token'); // Fetch token from AsyncStorage
+    const userId = id;
+    console.log(typeof(userId),"type of ------------")
+     console.log('button works'); // Ensure this is printed when button is clicked
+        console.log('Token:', token);
+        console.log('User ID:', userId);
+      
+        if (!userId.trim()) {
+          Alert.alert('Validation Error', 'Please enter a valid User ID');
+          return;
+        }
+     
+        try {
+          const response = await fetch('https://nodejs-api.pixelsscreen.com/user/approved', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              userId: userId,
+            }),
+          });
+      
+          console.log('API response:', response); // Log the response object
+      
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'An error occurred');
+          }
+      
+          const data = await response.json();
+          console.log(data,"dataaaaaaaaaaaa")
+          Alert.alert('Success', data.message);
+          console.log(userId,'-------Navigation to Dashboard Page---------')
+        } catch (error) {
+          console.error('API Error:', error);
+          Alert.alert('Error', error.message);
+        }
   };
+  
 
   const handleDelivery = (id) => {
     console.log(`Delivery button clicked for item ID: ${id}`);
