@@ -86,52 +86,74 @@ const Dashboard = () => {
 
   // Handle button actions
   const handleApproval = async (id) => {
-    console.log(`Approval button clicked for item ID: ${id}`);
-    const token = await AsyncStorage.getItem('token'); // Fetch token from AsyncStorage
-    const userId = id;
-    console.log(typeof(userId),"type of ------------")
-     console.log('button works'); // Ensure this is printed when button is clicked
-        console.log('Token:', token);
-        console.log('User ID:', userId);
-      
-        if (!userId.trim()) {
-          Alert.alert('Validation Error', 'Please enter a valid User ID');
-          return;
-        }
-     
-        try {
-          const response = await fetch('https://nodejs-api.pixelsscreen.com/user/approved', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              userId: userId,
-            }),
-          });
-      
-          console.log('API response:', response); // Log the response object
-      
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'An error occurred');
-          }
-      
-          const data = await response.json();
-          console.log(data,"dataaaaaaaaaaaa")
-          Alert.alert('Success', data.message);
-          console.log(userId,'-------Navigation to Dashboard Page---------')
-        } catch (error) {
-          console.error('API Error:', error);
-          Alert.alert('Error', error.message);
-        }
+    try {
+      const token = await AsyncStorage.getItem('token');// Fetch token from AsyncStorage
+      // Make a POST request to the API endpoint
+      const response = await fetch('http://nodejs-api.pixelsscreen.com/user/approved', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: id, // Send the user ID in the request body
+        }),
+      });
+  
+      // Parse the response
+      const data = await response.json();
+  
+      if (response.ok) {
+        // Success response
+        console.log('User status set to Approved:', data.message);
+        alert('User status successfully set to Approved.');
+      } else {
+        // Handle API errors
+        console.error('Error setting user status to Approved:', data.message);
+        alert(`Error: ${data.message}`);
+      }
+    } catch (error) {
+      // Handle network or other errors
+      console.error('Error making the API request:', error);
+      alert('An error occurred. Please try again.');
+    }
   };
   
+  
 
-  const handleDelivery = (id) => {
+  const handleDelivery = async (id) => {
     console.log(`Delivery button clicked for item ID: ${id}`);
-    // Add your delivery logic here
+    try {
+      const token = await AsyncStorage.getItem('token');// Fetch token from AsyncStorage
+      // Make a POST request to the API endpoint
+      const response = await fetch('http://nodejs-api.pixelsscreen.com/user/delivery', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: id, // Send the user ID in the request body
+        }),
+      });
+  
+      // Parse the response
+      const data = await response.json();
+  
+      if (response.ok) {
+        // Success response
+        console.log('User status set to Approved:', data.message);
+        alert('User status successfully set to Approved.');
+      } else {
+        // Handle API errors
+        console.error('Error setting user status to Approved:', data.message);
+        alert(`Error: ${data.message}`);
+      }
+    } catch (error) {
+      // Handle network or other errors
+      console.error('Error making the API request:', error);
+      alert('An error occurred. Please try again.');
+    }
   };
 
   // Render each user item
