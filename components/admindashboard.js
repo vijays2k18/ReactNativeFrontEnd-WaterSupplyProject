@@ -89,7 +89,7 @@ const Dashboard = () => {
     try {
       const token = await AsyncStorage.getItem('token');// Fetch token from AsyncStorage
       // Make a POST request to the API endpoint
-      const response = await fetch('http://nodejs-api.pixelsscreen.com/user/approved', {
+      const response = await fetch('https://nodejs-api.pixelsscreen.com/user/approved', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -126,7 +126,7 @@ const Dashboard = () => {
     try {
       const token = await AsyncStorage.getItem('token');// Fetch token from AsyncStorage
       // Make a POST request to the API endpoint
-      const response = await fetch('http://nodejs-api.pixelsscreen.com/user/delivery', {
+      const response = await fetch('https://nodejs-api.pixelsscreen.com/user/delivery', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

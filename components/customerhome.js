@@ -189,7 +189,7 @@ if (matchedUsers.length > 0) {
       {request === 2 && (
         <Text style={styles.message}>Your request has been approved!</Text>
       )}
-      {(request === 0 || request === 3) && (
+      {(request !== 1 && request !== 2) && (
         <View style={styles.buttonWrapper}>
           <Button
             title="Request Water"
@@ -286,17 +286,19 @@ const styles = StyleSheet.create({
       marginBottom: 20, // Adjusted to give some space between the time and button
     },
     buttonWrapper: {
-      width: 150, // Button width
-      height: 50, // Button height
-      borderRadius: 20,
+      width: 200, // Increased width for the button
+      height: 60, // Increased height for the button
+      borderRadius: 30, // Adjusted border radius for a larger button
       backgroundColor: 'lightblue', // Button background color
       justifyContent: 'center', // Center text vertically
       alignItems: 'center', // Center text horizontally
-      marginTop: 20, // Add spacing
+      position: 'absolute', // Position the button at the bottom
+      bottom: 180, // Distance from the bottom of the screen
+      alignSelf: 'center', // Center the button horizontally
       borderWidth: 1,
       borderColor: 'black', // Border color to match style
-      overflow: 'hidden', // Ensures round corners are properly clipped
     },
+    
     centered: {
       flex: 1,
       justifyContent: 'center',
