@@ -82,6 +82,7 @@ const CustomerHome = () => {
       console.log(data,"dataaaaaaaaaaaa")
       Alert.alert('Success', data.message);
       console.log(userId,'-------Navigation to Dashboard Page---------')
+      sendNotificationRequest()
     } catch (error) {
       console.error('API Error:', error);
       Alert.alert('Error', error.message);
@@ -158,7 +159,39 @@ if (matchedUsers.length > 0) {
     return () => clearInterval(intervalId);
   }, []);
   
+  const sendNotificationRequest = async () => {
+    console.log("user notification")
+  // admin_id
+    // const id = await AsyncStorage.getItem("admin_id");
+    // const userId = Number(id);
+    try {
+      const response = await fetch('https://nodejs-api.pixelsscreen.com/admin/notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: `${username} has requested for water`,
+          userId: 1, // Replace with the actual user ID
+        }),
+      });
   
+      // Log the response status and full response
+      console.log('Response Status:', response.status);
+      const responseData = await response.json();
+      console.log('Response Data:', responseData);
+  
+      if (response.ok) {
+        console.log('Notification sent successfully:', responseData);
+      } else {
+        console.error('Error sending notification:', responseData.error);
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
+  };
+
+
   return (
     <View style={styles.container}>
       {/* Top Row: User ID and Logout Button */}

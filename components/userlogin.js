@@ -36,11 +36,15 @@ const UserLogin = () => {
       const data = await response.json();
   
       if (response.ok) {
-        console.log('Login successful', data);
         await AsyncStorage.setItem("token", data.token);
         await AsyncStorage.setItem("userId", data.userId.toString());
         await AsyncStorage.setItem("name",data.name);
-        console.log(data.userId)
+        await AsyncStorage.setItem("admin_id",data.adminId.toString());
+         console.log(data.userId)
+         console.log(data.adminId," ********************************* admin id ******************")
+         console.log('Login successful', response.json
+
+         );
      
         // Navigate to customerhome with userId as a parameter
         Alert.alert('Success', 'Login successful.', [
