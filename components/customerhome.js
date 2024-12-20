@@ -82,7 +82,7 @@ const CustomerHome = () => {
       console.log(data,"dataaaaaaaaaaaa")
       Alert.alert('Success', data.message);
       console.log(userId,'-------Navigation to Dashboard Page---------')
-      sendNotificationRequest();
+      sendNotificationRequest()
     } catch (error) {
       console.error('API Error:', error);
       Alert.alert('Error', error.message);
