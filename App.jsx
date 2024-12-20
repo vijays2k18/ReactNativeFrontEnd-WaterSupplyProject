@@ -16,22 +16,50 @@ import { PermissionsAndroid } from 'react-native';
 
 const Stack = createStackNavigator();
    
-const App = () => {
-  useEffect(()=>{
-    requestAndroidNotificationPermission()
-  },[])
-  const requestAndroidNotificationPermission = async () => {
-    if (Platform.OS === 'android' && Platform.Version >= 33) {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log("Notification permission granted.");
-      } else {
-        console.log("Notification permission denied.");
+  const App = () => {
+ 
+    useEffect(() => {
+      requestNotificationPermission();
+    }, []);
+  
+    const requestNotificationPermission = async () => {
+      if (Platform.OS === 'android') {
+        // Request notification permission for Android 13 and above
+        if (Platform.Version >= 33) {
+          try {
+            const granted = await PermissionsAndroid.request(
+              PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+            );
+            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+              console.log('Android notification permission granted.');
+            } else {
+              console.log('Android notification permission denied.');
+            }
+          } catch (error) {
+            console.error('Error requesting Android notification permission:', error);
+          }
+        } else {
+          console.log('Notification permissions are automatically granted for Android versions below 13.');
+        }
+      } else if (Platform.OS === 'ios') {
+        try {
+          const authStatus = await messaging().requestPermission();
+          const enabled =
+            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  
+          if (enabled) {
+            console.log('iOS notification permission granted.');
+          } else {
+            console.log('iOS notification permission denied.');
+          }
+        } catch (error) {
+          console.error('Error requesting iOS notification permission:', error);
+        }
       }
-    }
-  };
+    };
+
+
   return (
     <PaperProvider> 
     <NavigationContainer>
@@ -57,4 +85,4 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-});
+})

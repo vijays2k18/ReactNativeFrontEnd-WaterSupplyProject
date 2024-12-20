@@ -14,6 +14,11 @@ import { PermissionsAndroid } from 'react-native';
 const Tab = createBottomTabNavigator();
 
 const AdminHome = ({ route }) => {
+
+  useEffect(()=>{
+    listenToNotifications()
+  },[])
+  
   useEffect(() => {
     messaging().onMessage(async (remoteMessage) => {
       console.log('Foreground message:', remoteMessage.notification);
@@ -36,6 +41,15 @@ const AdminHome = ({ route }) => {
   }, []);
 
  
+  const listenToNotifications = () => {
+    // Handle foreground notifications
+    const unsubscribe = messaging().onMessage(async (remoteMessage) => {
+      console.log('A new foreground notification received:', remoteMessage);
+      // Optionally handle the notification here (e.g., show an alert)
+    });
+
+    return unsubscribe; // Cleanup the listener on unmount
+  };
     
   const storeFcmToken = async (adminToken) => {
     try {
