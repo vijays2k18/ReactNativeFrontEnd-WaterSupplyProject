@@ -82,7 +82,7 @@ const CustomerHome = () => {
       console.log(data,"dataaaaaaaaaaaa")
       Alert.alert('Success', data.message);
       console.log(userId,'-------Navigation to Dashboard Page---------')
-      sendNotificationRequest()
+      sendNotificationRequest();
     } catch (error) {
       console.error('API Error:', error);
       Alert.alert('Error', error.message);
@@ -162,8 +162,8 @@ if (matchedUsers.length > 0) {
   const sendNotificationRequest = async () => {
     console.log("user notification")
   // admin_id
-    // const id = await AsyncStorage.getItem("admin_id");
-    // const userId = Number(id);
+    const id = await AsyncStorage.getItem("admin_id");
+    const userId = Number(id);
     try {
       const response = await fetch('https://nodejs-api.pixelsscreen.com/admin/notification', {
         method: 'POST',
@@ -172,7 +172,7 @@ if (matchedUsers.length > 0) {
         },
         body: JSON.stringify({
           message: `${username} has requested for water`,
-          userId: 1, // Replace with the actual user ID
+          userId: userId, // Replace with the actual user ID
         }),
       });
   
