@@ -1,4 +1,8 @@
-apply plugin: "com.android.application"
+plugins {
+  id("com.android.application")
+  // Add the Google services Gradle plugin
+  id("com.google.gms.google-services")
+}
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 /**
@@ -115,5 +119,7 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-analytics")
 }
 apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")

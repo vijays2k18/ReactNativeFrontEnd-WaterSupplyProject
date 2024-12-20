@@ -67,17 +67,20 @@ const closeMenu = () => setMenuVisible(null);
   }, []);
 
   const handleAddCustomer = async () => {
+    const token = await AsyncStorage.getItem('token');
+    const adminId = await AsyncStorage.getItem('adminId');
+    const id = Number(adminId) 
     if (!name || !phone_number || !address) {
       Alert.alert('Validation Error', 'Please fill out all fields.');
       return;
     }
-
+  
     // Validate phone number length
     if (phone_number.length !== 10) {
       Alert.alert('Validation Error', 'Phone number must be exactly 10 digits.');
       return;
     }
-
+  
     // Check if phone number already exists
     const existingCustomer = customers.find(
       (customer) => customer.phone_number === phone_number
@@ -89,10 +92,10 @@ const closeMenu = () => setMenuVisible(null);
       );
       return;
     }
-
+  
     try {
-      const token = await AsyncStorage.getItem('token');
-
+    // Retrieve adminId from storage or state
+  
       if (!token) {
         Alert.alert(
           'Authentication Error',
@@ -100,10 +103,19 @@ const closeMenu = () => setMenuVisible(null);
         );
         return;
       }
-
+  
+      if (!adminId) {
+        Alert.alert(
+          'Authorization Error',
+          'Admin ID is missing. Please log in as an admin.'
+        );
+        return;
+      }
+  
       console.log(`Token: ${token}`);
-      console.log('Adding new customer:', { name, phone_number, address });
-
+      console.log(`Admin ID: ${adminId}`);
+      console.log('Adding new customer:', { name, phone_number, address, id });
+  
       const response = await fetch(
         'https://nodejs-api.pixelsscreen.com/api/users',
         {
@@ -116,17 +128,18 @@ const closeMenu = () => setMenuVisible(null);
             name: name,
             phone_number: phone_number,
             address: address,
+            adminId: id, 
           }),
         }
       );
-
+  
       let result = {};
       try {
         result = await response.json();
       } catch (jsonError) {
         console.warn('Failed to parse response as JSON:', jsonError);
       }
-
+  
       if (response.ok) {
         Alert.alert('Success', 'Customer added successfully.');
         const newCustomer = {
@@ -135,7 +148,7 @@ const closeMenu = () => setMenuVisible(null);
           phone_number: phone_number,
           address,
         };
-
+  
         setCustomers((prevCustomers) => [...prevCustomers, newCustomer]);
         setName('');
         setPhoneNumber('');
@@ -162,6 +175,7 @@ const closeMenu = () => setMenuVisible(null);
       }
     }
   };
+  
 
   const handleDeleteCustomer = async (id) => {
     try {

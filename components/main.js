@@ -1,8 +1,24 @@
 import { StyleSheet, Text, View,Image,SafeAreaView,Button } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useNavigation } from '@react-navigation/native'
 
 const Main = () => {
+
+  useEffect(()=>{
+    requestAndroidNotificationPermission()
+  },[])
+  const requestAndroidNotificationPermission = async () => {
+    if (Platform.OS === 'android' && Platform.Version >= 33) {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log("Notification permission granted.");
+      } else {
+        console.log("Notification permission denied.");
+      }
+    }
+  };
   const navigation = useNavigation();
 
   const customerHandler = () =>{

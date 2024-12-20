@@ -36,7 +36,8 @@ const AdminLogin = () => {
       if (response.ok) {
         // Store the token in AsyncStorage
         await AsyncStorage.setItem("token", result.token);
-        console.log(result.token,"-----------Admin Token ----------")
+        await AsyncStorage.setItem("adminId",result.adminId.toString());
+        console.log(result.adminId,"-----------Admin Token ----------")
 
         // Navigate to AdminHome with the token
         Alert.alert('Success', 'Login successful', [

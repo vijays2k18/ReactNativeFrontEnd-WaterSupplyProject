@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, SafeAreaView, Button,TextInput} from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, Button,TextInput, Alert} from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
@@ -6,11 +6,122 @@ import Icon from 'react-native-vector-icons/MaterialIcons'; // Import MaterialIc
 import Customer from './customer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Dashboard from './admindashboard';
+import messaging from '@react-native-firebase/messaging';
+import { PermissionsAndroid } from 'react-native';
+
 
 
 const Tab = createBottomTabNavigator();
 
 const AdminHome = ({ route }) => {
+  useEffect(() => {
+    messaging().onMessage(async (remoteMessage) => {
+      console.log('Foreground message:', remoteMessage.notification);
+      // Handle the notification, e.g., show a local alert or display a notification in-app
+    });
+  }, []);
+
+  useEffect(() => {
+    messaging().onNotificationOpenedApp(remoteMessage => {
+      console.log('Notification opened from background state:', remoteMessage.notification);
+      // Handle notification when app opens from background
+    });
+  
+    messaging().getInitialNotification().then(remoteMessage => {
+      if (remoteMessage) {
+        console.log('App opened from a notification:', remoteMessage.notification);
+        // Handle the notification
+      }
+    });
+  }, []);
+
+ 
+    
+  const storeFcmToken = async (adminToken) => {
+    try {
+      // Replace with the actual user ID
+      const adminId = await AsyncStorage.getItem("adminId")
+      const user_id = Number(adminId)
+      console.log("ghhji")
+      // Make the API call
+      const response = await fetch('https://nodejs-api.pixelsscreen.com/admintoken/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id,
+          admin_token: adminToken, // Pass the stored FCM token
+        }),
+      });
+  
+      // Parse the response
+      console.log(response,"response")
+      const responseJson = await response.json();
+      console.log('Server Response:', responseJson);
+  
+      if (response.ok) {
+        console.log('Admin token saved successfully:', responseJson);
+        Alert.alert('Success', 'Admin token saved successfully');
+      } else {
+        console.error('Error saving admin token:', responseJson.message || 'Unknown error');
+        Alert.alert('Error', responseJson.message || 'Failed to save admin token');
+      }
+    } catch (error) {
+      console.error('Error storing FCM token:', error);
+      Alert.alert('Error', 'An unexpected error occurred while saving the admin token');
+    }
+  };
+
+  useEffect(() => {
+    // Request permission to receive notifications (iOS only)
+    if (Platform.OS === 'ios') {
+      messaging()
+        .requestPermission()
+        .then((authStatus) => {
+          const enabled =
+            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+          if (enabled) {
+            console.log('Notification permission granted');
+          } else {
+            console.log('Notification permission denied');
+          }
+        });
+    }
+
+    // Get FCM token and store it in a constant
+    const getAndStoreFcmToken = async () => {
+      try {
+        const fcmToken = await messaging().getToken();
+        if (fcmToken) {
+          console.log('FCM Token:', fcmToken);
+          // Store the FCM token in a constant variable
+          const adminToken = fcmToken;
+          // Send the token to the backend
+          storeFcmToken(adminToken);
+        } else {
+          console.log('No FCM token found');
+        }
+      } catch (error) {
+        console.error('Error retrieving FCM token:', error);
+      }
+    };
+
+    getAndStoreFcmToken();
+
+    // Handle background notification
+    messaging().onNotificationOpenedApp(remoteMessage => {
+      console.log('Notification caused app to open from background state:', remoteMessage.notification);
+    });
+
+    // Handle when app is completely closed
+    messaging().onMessage(async remoteMessage => {
+      console.log('Foreground message:', remoteMessage.notification);
+    });
+  }, []);
+
+  // *********************************************************************************************** //
   const navigation = useNavigation(); // Use navigation for logout button
   const data = route.params;
 
