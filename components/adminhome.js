@@ -62,7 +62,6 @@ const AdminHome = ({ route }) => {
   
       if (response.ok) {
         console.log('Admin token saved successfully:', responseJson);
-        Alert.alert('Success', 'Admin token saved successfully');
       } else {
         console.error('Error saving admin token:', responseJson.message || 'Unknown error');
         Alert.alert('Error', responseJson.message || 'Failed to save admin token');
