@@ -11,12 +11,74 @@ import Customer from './components/customer';
 import CustomerHome from './components/customerhome';
 import { Provider as PaperProvider } from 'react-native-paper';
 import messaging from '@react-native-firebase/messaging';
-import { PermissionsAndroid } from 'react-native';
+import { PermissionsAndroid, Alert, View, Text, Button, Platform } from 'react-native';
+
 
 
 const Stack = createStackNavigator();
    
   const App = () => {
+
+    useEffect(() => {
+      if (Platform.OS === 'android') {
+        requestNotificationPermission();
+      }
+   // Handle notifications in the foreground
+   const unsubscribeOnMessage = messaging().onMessage(async (remoteMessage) => {
+    console.log('Foreground message:', remoteMessage);
+    Alert.alert('Notification Received', remoteMessage.notification.body);
+  });
+  
+  // Background and quit state handler
+  const unsubscribeOnNotificationOpened = messaging().onNotificationOpenedApp((remoteMessage) => {
+    console.log('Notification caused app to open:', remoteMessage);
+    Alert.alert('Notification Clicked', remoteMessage.notification.body);
+  });
+  
+  const unsubscribeInitialNotification = messaging()
+    .getInitialNotification()
+    .then((remoteMessage) => {
+      if (remoteMessage) {
+        console.log('App opened from quit state by notification:', remoteMessage);
+        Alert.alert('Notification Clicked (Quit State)', remoteMessage.notification.body);
+      }
+    });
+  
+    return () => {
+      unsubscribeOnMessage();
+      unsubscribeOnNotificationOpened();
+      unsubscribeInitialNotification();
+    };
+  
+    }, []);
+
+    const requestNotificationPermission = async () => {
+      if (Platform.OS === 'android') {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+          );
+  
+          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            console.log('Notification permission granted');
+          } else if (granted === PermissionsAndroid.RESULTS.DENIED) {
+            Alert.alert(
+              'Permission Denied',
+              'Notification permissions are required to stay updated. Please enable them in Settings.',
+              [{ text: 'OK' }]
+            );
+          } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+            Alert.alert(
+              'Permission Blocked',
+              'Notification permissions are blocked. Please enable them in Settings.',
+              [{ text: 'OK' }]
+            );
+          }
+        } catch (err) {
+          console.warn(err);
+        }
+      }
+    };
  
    return (
     <PaperProvider> 

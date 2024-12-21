@@ -1,15 +1,20 @@
-import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity,Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import messaging from '@react-native-firebase/messaging';
+
 
 const Dashboard = () => {
   const [error, setError] = useState(null); // State to store error messages
   const [userIds, setUserIds] = useState([]);
   const [users, setUsers] = useState([]); // Store user details
   const [requested, setRequested] = useState([]); // Fix typo
-
   const [combinedData, setCombinedData] = useState([]);
 
+  useEffect(()=>{
+    getFcmToken()
+    saveAdminToken()
+  },[])
   // Fetch user statuses periodically
   useEffect(() => {
     const fetchStatuses = async () => {
@@ -41,9 +46,35 @@ const Dashboard = () => {
     const intervalId = setInterval(() => {
       fetchStatuses();
     }, 2000);
+// Handle notifications in the foreground
+const unsubscribeOnMessage = messaging().onMessage(async (remoteMessage) => {
+  console.log('Foreground message:', remoteMessage);
+  Alert.alert('Notification Received', remoteMessage.notification.body);
+});
 
+// Background and quit state handler
+const unsubscribeOnNotificationOpened = messaging().onNotificationOpenedApp((remoteMessage) => {
+  console.log('Notification caused app to open:', remoteMessage);
+  Alert.alert('Notification Clicked', remoteMessage.notification.body);
+});
+
+const unsubscribeInitialNotification = messaging()
+  .getInitialNotification()
+  .then((remoteMessage) => {
+    if (remoteMessage) {
+      console.log('App opened from quit state by notification:', remoteMessage);
+      Alert.alert('Notification Clicked (Quit State)', remoteMessage.notification.body);
+    }
+  });
+
+  return () => {
+    unsubscribeOnMessage();
+    unsubscribeOnNotificationOpened();
+    unsubscribeInitialNotification();
+  };
     // Cleanup interval on component unmount
     return () => clearInterval(intervalId);
+
   }, []);
 
   // Fetch user details when userIds change
@@ -119,7 +150,55 @@ const Dashboard = () => {
     }
   };
   
-  
+  const getFcmToken = async () => {
+    try {
+      const token = await messaging().getToken();
+      if (token) {
+        console.log('FCM Token:', token);
+        await AsyncStorage.setItem("fcmtoken",token)
+      } else {
+        console.log('No FCM token received');
+      }
+    } catch (error) {
+      console.error('Error fetching FCM token:', error);
+    }
+  };
+
+  const saveAdminToken = async () => {
+    const adminId = await AsyncStorage.getItem("adminId");
+    const userId = Number(adminId)
+    const fcmToken = await AsyncStorage.getItem("fcmtoken");
+    console.log(userId,"******** // token saved // ***************")
+    console.log(fcmToken,"received")
+    if (!userId || !fcmToken) {
+      Alert.alert('Error', 'User ID and Admin token are required');
+      return;
+    }
+
+    try {
+      const response = await fetch('https:///nodejs-api.pixelsscreen.com/admintoken/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          admin_token: fcmToken,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert('Success', data.message);
+      } else {
+        Alert.alert('Error', data.message || 'Failed to save Admin token');
+      }
+    } catch (error) {
+      console.error('Error saving Admin token:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
+  };
 
   const handleDelivery = async (id) => {
     console.log(`Delivery button clicked for item ID: ${id}`);

@@ -29,10 +29,35 @@ const CustomerHome = () => {
         setToken(storedToken);
         setUserId(storedUserId);// Convert userId to a number
         setUserName(storeUserName);
-        console.log(storedUserId,"-----------kanna user id------------------");
       } catch (err) {
         console.error('Error retrieving user data:', err);
       }
+      // Handle notifications in the foreground
+   const unsubscribeOnMessage = messaging().onMessage(async (remoteMessage) => {
+    console.log('Foreground message:', remoteMessage);
+    Alert.alert('Notification Received', remoteMessage.notification.body);
+  });
+  
+  // Background and quit state handler
+  const unsubscribeOnNotificationOpened = messaging().onNotificationOpenedApp((remoteMessage) => {
+    console.log('Notification caused app to open:', remoteMessage);
+    Alert.alert('Notification Clicked', remoteMessage.notification.body);
+  });
+  
+  const unsubscribeInitialNotification = messaging()
+    .getInitialNotification()
+    .then((remoteMessage) => {
+      if (remoteMessage) {
+        console.log('App opened from quit state by notification:', remoteMessage);
+        Alert.alert('Notification Clicked (Quit State)', remoteMessage.notification.body);
+      }
+    });
+  
+    return () => {
+      unsubscribeOnMessage();
+      unsubscribeOnNotificationOpened();
+      unsubscribeInitialNotification();
+    };
     };
 
     fetchUserData();
@@ -107,9 +132,7 @@ const CustomerHome = () => {
 
   useEffect(() => {
     const fetchUserStatuses = async () => {
-      const storedToken1 = await AsyncStorage.getItem("token");
-      console.log("working");
-  
+      const storedToken1 = await AsyncStorage.getItem("token"); 
       try {
         const response = await fetch('https://nodejs-api.pixelsscreen.com/users/status', {
           method: 'GET',
@@ -125,18 +148,11 @@ const CustomerHome = () => {
         }
   
         const responseData = await response.json();
-console.log(responseData, "Full response data from API");
 
 const storedUserId = await AsyncStorage.getItem("userId");
 const userId1 = Number(storedUserId); // Ensure this is dynamic if needed
-console.log(userId1, "Value of userId being used for lookup");
-
-          console.log(typeof(userId1),"-------------type checking------------------")
-
 // Map response data to only include the user with the matching userId
 const matchedUsers = responseData.filter((item) => Number(item.user_id) === userId1); 
-console.log(matchedUsers, "Filtered users matching userId");
-
 // Check if there is any matched user
 if (matchedUsers.length > 0) {
   const user = matchedUsers[0]; // Assume the first match (if unique user IDs)
@@ -159,24 +175,64 @@ if (matchedUsers.length > 0) {
     return () => clearInterval(intervalId);
   }, []);
   
-  const sendNotificationRequest = async () => {
-    console.log("user notification")
-  // admin_id
+  const fetchAdminToken = async () => {
     const id = await AsyncStorage.getItem("admin_id");
     const userId = Number(id);
+    const token = await AsyncStorage.getItem("token"); // Retrieve Bearer token
+    
+    if (!userId) {
+      Alert.alert('Error', 'User ID is required');
+      return;
+    }
+  
+    try {
+      const response = await fetch(`https://nodejs-api.pixelsscreen.com/get-admin-token/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Add Bearer token here
+        },
+      });
+  
+      const responseData = await response.json();
+  
+      if (response.ok) {
+        await AsyncStorage.setItem("admin_token",responseData.admin_token);
+        console.log(responseData.admin_token,"// ************ Admin Token *********************")
+      } else {
+        Alert.alert('Error', responseData.error || 'Failed to retrieve admin token');
+      }
+    } catch (error) {
+      console.error('Error fetching admin token:', error);
+      Alert.alert('Error', 'An error occurred while fetching the admin token');
+    }
+  };
+  
+
+
+  const sendNotificationRequest = async () => {
+    fetchAdminToken()
+    console.log("user notification");
+    const id = await AsyncStorage.getItem("admin_id");
+    const userId = Number(id);
+    const admin_token = await AsyncStorage.getItem("admin_token");
+    // Replace 'auth_token' with the key used to store your token
+
+    console.log(admin_token,"// *************** Admin Token //");
+    
     try {
       const response = await fetch('https://nodejs-api.pixelsscreen.com/admin/notification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${admin_token}`, // Add Bearer token here
         },
         body: JSON.stringify({
           message: `${username} has requested for water`,
-          userId: userId, // Replace with the actual user ID
+          userId: userId,
         }),
       });
   
-      // Log the response status and full response
       console.log('Response Status:', response.status);
       const responseData = await response.json();
       console.log('Response Data:', responseData);
@@ -190,6 +246,7 @@ if (matchedUsers.length > 0) {
       console.error('Error sending notification:', error);
     }
   };
+  
 
 
   return (
