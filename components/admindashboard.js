@@ -19,12 +19,12 @@ const Dashboard = () => {
         const enabled =
           authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
           authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
+  
         if (enabled) {
           // Get FCM token
           const token = await messaging().getToken();
           console.log('FCM Token:', token);
-          await AsyncStorage.setItem("fcmToken",token);
+          await AsyncStorage.setItem("fcmToken", token);
         } else {
           Alert.alert('Permission denied', 'Enable notifications to get FCM token.');
         }
@@ -32,33 +32,33 @@ const Dashboard = () => {
         console.error('Error fetching FCM token:', error);
       }
     };
-
+  
     getToken();
-
+  
     // Optional: Handle token refresh
     const unsubscribeTokenRefresh = messaging().onTokenRefresh((token) => {
       console.log('FCM Token refreshed:', token);
       setFcmToken(token);
     });
-
+  
     // Handle foreground notifications
     const unsubscribeForeground = messaging().onMessage(async (remoteMessage) => {
       console.log('Foreground notification received:', remoteMessage);
       Alert.alert('Notification', remoteMessage.notification?.title || 'New Notification');
     });
-
+  
     // Handle background notifications
-    const unsubscribeBackground = messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+    messaging().setBackgroundMessageHandler(async (remoteMessage) => {
       console.log('Background notification received:', remoteMessage);
     });
-
+  
+    // Cleanup function: only unsubscribe from onTokenRefresh and onMessage
     return () => {
       unsubscribeTokenRefresh();
       unsubscribeForeground();
-      unsubscribeBackground();
     };
   }, []);
-
+  
 
 
   const saveAdminToken = async () => {
@@ -92,9 +92,7 @@ const Dashboard = () => {
     }
   };
   
-  useEffect(()=>{
-    saveAdminToken();
-  },[])
+ 
   // Fetch user statuses periodically
   useEffect(() => {
     const fetchStatuses = async () => {
@@ -170,6 +168,11 @@ const Dashboard = () => {
     setCombinedData(combined);
   }, [users, requested]);
 
+  // Save Admin Token
+
+  useEffect(()=>{
+    saveAdminToken();
+  },[])
   // Handle button actions
   const handleApproval = async (id) => {
     try {

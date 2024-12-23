@@ -217,7 +217,6 @@ if (matchedUsers.length > 0) {
   
       if (response.ok) {
         // Successfully sent notification
-        Alert.alert('Success', data.message || 'Notification sent successfully');
         console.log(data," *********************************** Notification send to Admin ID **************************************** ")
       } else {
         // Error from server
