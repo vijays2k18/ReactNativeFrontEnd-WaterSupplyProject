@@ -34,7 +34,8 @@ const CustomerHome = () => {
       }
     };
   
-    fetchUserData(); // Call the function here, outside of itself
+    fetchUserData();
+    fetchAdminToken(); // Call the function here, outside of itself
   
     const updateDateTime = () => {
       const now = new Date();
@@ -48,10 +49,12 @@ const CustomerHome = () => {
     return () => clearInterval(interval); // Clean up on unmount
   }, []);
   
+
   const requestwater = async () => {
+    sendNotification();
     console.log('button works'); // Ensure this is printed when button is clicked
     console.log('Token:', token);
-    console.log('User ID:', userId);
+    console.log('User ID: *********************************', userId);
   
     if (!userId.trim()) {
       Alert.alert('Validation Error', 'Please enter a valid User ID');
@@ -148,11 +151,13 @@ if (matchedUsers.length > 0) {
   }, []);
   
   // Admin Token Fetch for Notification FCM Token
+
   
   const fetchAdminToken = async () => {
     const id = await AsyncStorage.getItem("admin_id");
     const userId = Number(id);
     const token = await AsyncStorage.getItem("token"); // Retrieve Bearer token
+    console.log(userId,"userId")
     
     if (!userId) {
       Alert.alert('Error', 'User ID is required');
@@ -181,6 +186,49 @@ if (matchedUsers.length > 0) {
       Alert.alert('Error', 'An error occurred while fetching the admin token');
     }
   };
+
+  const sendNotification = async () => {
+    const id = await AsyncStorage.getItem("admin_id");
+    const userId = Number(id);
+    const token = await AsyncStorage.getItem("admin_token");
+    console.log("************************ Admin Token  ************************************* ",token);
+    console.log("***************************** user Id for send notification ***************************** ",userId);
+    const message = `${username} has requested water`;
+
+    if (!userId || !message) {
+      Alert.alert('Error', 'Please provide both User ID and Message.');
+      return;
+    }
+  
+    try {
+      const response = await fetch('https://nodejs-api.pixelsscreen.com/admin/notification', {  // Replace with your actual API URL
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,  // Pass Bearer token in header
+        },
+        body: JSON.stringify({
+          userId: userId,
+          message: message,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        // Successfully sent notification
+        Alert.alert('Success', data.message || 'Notification sent successfully');
+        console.log(data," *********************************** Notification send to Admin ID **************************************** ")
+      } else {
+        // Error from server
+        Alert.alert('Error', data.error || 'Failed to send notification');
+      }
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      Alert.alert('Error', 'An error occurred while sending the notification');
+    }
+  };
+  
   
   return (
     <View style={styles.container}>
