@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, TouchableOpacity,Alert } from 'react-native';
+import { Platform ,StyleSheet, Text, View, FlatList, TouchableOpacity,Alert,PermissionsAndroid } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
@@ -10,7 +10,91 @@ const Dashboard = () => {
   const [users, setUsers] = useState([]); // Store user details
   const [requested, setRequested] = useState([]); // Fix typo
   const [combinedData, setCombinedData] = useState([]);
+  // ---------------------------------------------------------------------------------------------------------
+  useEffect(() => {
+    const getToken = async () => {
+      try {
+        // Request user permission for notifications
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+          authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+          authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
+        if (enabled) {
+          // Get FCM token
+          const token = await messaging().getToken();
+          console.log('FCM Token:', token);
+          await AsyncStorage.setItem("fcmToken",token);
+        } else {
+          Alert.alert('Permission denied', 'Enable notifications to get FCM token.');
+        }
+      } catch (error) {
+        console.error('Error fetching FCM token:', error);
+      }
+    };
+
+    getToken();
+
+    // Optional: Handle token refresh
+    const unsubscribeTokenRefresh = messaging().onTokenRefresh((token) => {
+      console.log('FCM Token refreshed:', token);
+      setFcmToken(token);
+    });
+
+    // Handle foreground notifications
+    const unsubscribeForeground = messaging().onMessage(async (remoteMessage) => {
+      console.log('Foreground notification received:', remoteMessage);
+      Alert.alert('Notification', remoteMessage.notification?.title || 'New Notification');
+    });
+
+    // Handle background notifications
+    const unsubscribeBackground = messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+      console.log('Background notification received:', remoteMessage);
+    });
+
+    return () => {
+      unsubscribeTokenRefresh();
+      unsubscribeForeground();
+      unsubscribeBackground();
+    };
+  }, []);
+
+
+
+  const saveAdminToken = async () => {
+    try {
+      const id = await AsyncStorage.getItem("adminId"); // Await to get the value
+      const fcmToken = await AsyncStorage.getItem("fcmToken");
+      const userId = Number(id);
+      console.log("Admin ID:", id,userId);
+      console.log("FCM Token ***************:", fcmToken);
+    
+      const response = await fetch('https://nodejs-api.pixelsscreen.com/admintoken/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          admin_token: fcmToken,
+        }),
+      });
+  
+      const data = await response.json();
+      if (response.ok) {
+        Alert.alert('Success', data.message);
+      } else {
+        Alert.alert('Error', data.message || 'Failed to save admin token.');
+      }
+    } catch (error) {
+      console.error('Error saving admin token:', error);
+      Alert.alert('Error', 'Failed to save admin token.');
+    }
+  };
+  
+  useEffect(()=>{
+    saveAdminToken();
+  },[])
   // Fetch user statuses periodically
   useEffect(() => {
     const fetchStatuses = async () => {

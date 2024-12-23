@@ -1,32 +1,13 @@
 {
   "project_info": {
-    "project_number": "507000937587",
-    "project_id": "fir-notification-c800e",
-    "storage_bucket": "fir-notification-c800e.firebasestorage.app"
+    "project_number": "29131197462",
+    "project_id": "watersupplynotificaiton",
+    "storage_bucket": "watersupplynotificaiton.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:507000937587:android:b1385a310e6a9e48441e06",
-        "android_client_info": {
-          "package_name": "com.notificatons"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyAXKXd0m4p5zB8e0021YpHLVqVufoWdMXg"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:507000937587:android:bfb938ddaecd9242441e06",
+        "mobilesdk_app_id": "1:29131197462:android:a763e7854a489d46413937",
         "android_client_info": {
           "package_name": "com.watersupplyproject"
         }
@@ -34,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAXKXd0m4p5zB8e0021YpHLVqVufoWdMXg"
+          "current_key": "AIzaSyDqS0IXbSgXE6ASq_CKLtGOirfW3oQXZ0o"
         }
       ],
       "services": {
