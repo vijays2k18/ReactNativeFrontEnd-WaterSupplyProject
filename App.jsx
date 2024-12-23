@@ -23,33 +23,6 @@ const Stack = createStackNavigator();
       if (Platform.OS === 'android') {
         requestNotificationPermission();
       }
-   // Handle notifications in the foreground
-   const unsubscribeOnMessage = messaging().onMessage(async (remoteMessage) => {
-    console.log('Foreground message:', remoteMessage);
-    Alert.alert('Notification Received', remoteMessage.notification.body);
-  });
-  
-  // Background and quit state handler
-  const unsubscribeOnNotificationOpened = messaging().onNotificationOpenedApp((remoteMessage) => {
-    console.log('Notification caused app to open:', remoteMessage);
-    Alert.alert('Notification Clicked', remoteMessage.notification.body);
-  });
-  
-  const unsubscribeInitialNotification = messaging()
-    .getInitialNotification()
-    .then((remoteMessage) => {
-      if (remoteMessage) {
-        console.log('App opened from quit state by notification:', remoteMessage);
-        Alert.alert('Notification Clicked (Quit State)', remoteMessage.notification.body);
-      }
-    });
-  
-    return () => {
-      unsubscribeOnMessage();
-      unsubscribeOnNotificationOpened();
-      unsubscribeInitialNotification();
-    };
-  
     }, []);
 
     const requestNotificationPermission = async () => {

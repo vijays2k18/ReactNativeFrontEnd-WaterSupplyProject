@@ -27,53 +27,27 @@ const CustomerHome = () => {
         const storedUserId = await AsyncStorage.getItem("userId");
         const storeUserName = await AsyncStorage.getItem("name");
         setToken(storedToken);
-        setUserId(storedUserId);// Convert userId to a number
+        setUserId(storedUserId); // Convert userId to a number
         setUserName(storeUserName);
       } catch (err) {
         console.error('Error retrieving user data:', err);
       }
-      // Handle notifications in the foreground
-   const unsubscribeOnMessage = messaging().onMessage(async (remoteMessage) => {
-    console.log('Foreground message:', remoteMessage);
-    Alert.alert('Notification Received', remoteMessage.notification.body);
-  });
-  
-  // Background and quit state handler
-  const unsubscribeOnNotificationOpened = messaging().onNotificationOpenedApp((remoteMessage) => {
-    console.log('Notification caused app to open:', remoteMessage);
-    Alert.alert('Notification Clicked', remoteMessage.notification.body);
-  });
-  
-  const unsubscribeInitialNotification = messaging()
-    .getInitialNotification()
-    .then((remoteMessage) => {
-      if (remoteMessage) {
-        console.log('App opened from quit state by notification:', remoteMessage);
-        Alert.alert('Notification Clicked (Quit State)', remoteMessage.notification.body);
-      }
-    });
-  
-    return () => {
-      unsubscribeOnMessage();
-      unsubscribeOnNotificationOpened();
-      unsubscribeInitialNotification();
     };
-    };
-
-    fetchUserData();
-
+  
+    fetchUserData(); // Call the function here, outside of itself
+  
     const updateDateTime = () => {
       const now = new Date();
       const formattedDateTime = `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
       setDateTime(formattedDateTime);
     };
-
+  
     updateDateTime();
     const interval = setInterval(updateDateTime, 1000); // Update time every second
-
+  
     return () => clearInterval(interval); // Clean up on unmount
   }, []);
-
+  
   const requestwater = async () => {
     console.log('button works'); // Ensure this is printed when button is clicked
     console.log('Token:', token);
@@ -107,14 +81,12 @@ const CustomerHome = () => {
       console.log(data,"dataaaaaaaaaaaa")
       Alert.alert('Success', data.message);
       console.log(userId,'-------Navigation to Dashboard Page---------')
-      sendNotificationRequest()
     } catch (error) {
       console.error('API Error:', error);
       Alert.alert('Error', error.message);
     }
   };
-  
-
+ 
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem(token);
@@ -175,6 +147,8 @@ if (matchedUsers.length > 0) {
     return () => clearInterval(intervalId);
   }, []);
   
+  // Admin Token Fetch for Notification FCM Token
+  
   const fetchAdminToken = async () => {
     const id = await AsyncStorage.getItem("admin_id");
     const userId = Number(id);
@@ -208,47 +182,6 @@ if (matchedUsers.length > 0) {
     }
   };
   
-
-
-  const sendNotificationRequest = async () => {
-    fetchAdminToken()
-    console.log("user notification");
-    const id = await AsyncStorage.getItem("admin_id");
-    const userId = Number(id);
-    const admin_token = await AsyncStorage.getItem("admin_token");
-    // Replace 'auth_token' with the key used to store your token
-
-    console.log(admin_token,"// *************** Admin Token //");
-    
-    try {
-      const response = await fetch('https://nodejs-api.pixelsscreen.com/admin/notification', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${admin_token}`, // Add Bearer token here
-        },
-        body: JSON.stringify({
-          message: `${username} has requested for water`,
-          userId: userId,
-        }),
-      });
-  
-      console.log('Response Status:', response.status);
-      const responseData = await response.json();
-      console.log('Response Data:', responseData);
-  
-      if (response.ok) {
-        console.log('Notification sent successfully:', responseData);
-      } else {
-        console.error('Error sending notification:', responseData.error);
-      }
-    } catch (error) {
-      console.error('Error sending notification:', error);
-    }
-  };
-  
-
-
   return (
     <View style={styles.container}>
       {/* Top Row: User ID and Logout Button */}
